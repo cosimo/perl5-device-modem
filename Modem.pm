@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.11 2002-04-14 09:26:45 cosimo Exp $
+# $Id: Modem.pm,v 1.12 2002-04-29 16:55:30 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.11 $ =~ /(\d)\.(\d+)/; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.12 $ =~ /(\d)\.(\d+)/; 
 
 BEGIN {
 	if( $^O =~ /Win/i ) {
@@ -35,7 +35,7 @@ use constant CR => "\r";
 
 # Connection defaults
 $Device::Modem::DEFAULT_PORT = ( $^O =~ /win32/i ) ? 'COM1' : '/dev/modem';
-$Device::Modem::BAUDRATE = 57600;
+$Device::Modem::BAUDRATE = 38400;
 $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
 $Device::Modem::PARITY   = 'none';
