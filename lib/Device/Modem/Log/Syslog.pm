@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Syslog.pm,v 1.8 2003-05-20 05:19:37 cosimo Exp $
+# $Id: Syslog.pm,v 1.9 2003-09-14 09:27:20 cosimo Exp $
 
 package Device::Modem::Log::Syslog;
-$VERSION = substr q$Revision: 1.8 $, 10;
+$VERSION = substr q$Revision: 1.9 $, 10;
 
 use strict;
 use Sys::Syslog ();
@@ -60,6 +60,7 @@ sub write($$) {
 		$level = 'info';
 	}
 	Sys::Syslog::syslog( $level, @msg );
+	return 1;
 }
 
 }
