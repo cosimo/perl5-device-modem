@@ -2,7 +2,7 @@
 #
 # Initial revision: 1 Oct 2003
 #
-# Copyright (C) 2003 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2003-2004 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -14,7 +14,7 @@
 # This Xmodem protocol version is indeed very alpha code,
 # probably does not work at all, so stay tuned...
 #
-# $Id: Xmodem.pm,v 1.4 2003-11-08 17:29:00 cosimo Exp $
+# $Id: Xmodem.pm,v 1.5 2004-11-10 09:04:45 cosimo Exp $
 
 package Xmodem::Constants;
 

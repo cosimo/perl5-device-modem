@@ -1,6 +1,6 @@
 # Device::Modem::Log::File - Text files logging plugin for Device::Modem class
 #
-# Copyright (C) 2002 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2002-2004 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: File.pm,v 1.13 2004-11-10 09:01:55 cosimo Exp $
+# $Id: File.pm,v 1.14 2004-11-10 09:04:45 cosimo Exp $
 #
 package Device::Modem::Log::File;
-$VERSION = substr q$Revision: 1.13 $, 10;
+$VERSION = substr q$Revision: 1.14 $, 10;
 
 use strict;
 use File::Path     ();

@@ -1,6 +1,6 @@
 # Device::Modem::Log::Syslog - Syslog logging plugin for Device::Modem class
 #
-# Copyright (C) 2002 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2002-2004 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Syslog.pm,v 1.10 2003-11-08 17:57:20 cosimo Exp $
+# $Id: Syslog.pm,v 1.11 2004-11-10 09:04:45 cosimo Exp $
 
 package Device::Modem::Log::Syslog;
-$VERSION = substr q$Revision: 1.10 $, 10;
+$VERSION = substr q$Revision: 1.11 $, 10;
 
 use strict;
 use Sys::Syslog ();
