@@ -9,14 +9,14 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.41 2004-09-19 19:09:39 cosimo Exp $
+# $Id: Modem.pm,v 1.42 2004-11-10 09:01:38 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.41 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.42 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
-    if( index($^O, 'Win') > 0 ) {   # MSWin32 (and not darwin, cygwin, ...)
+    if( index($^O, 'Win') >= 0 ) {   # MSWin32 (and not darwin, cygwin, ...)
 
         require Win32::SerialPort;
         import  Win32::SerialPort;

@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: File.pm,v 1.12 2003-11-08 17:57:20 cosimo Exp $
+# $Id: File.pm,v 1.13 2004-11-10 09:01:55 cosimo Exp $
 #
 package Device::Modem::Log::File;
-$VERSION = substr q$Revision: 1.12 $, 10;
+$VERSION = substr q$Revision: 1.13 $, 10;
 
 use strict;
 use File::Path     ();
@@ -20,7 +20,7 @@ use File::Basename ();
 	
 # Define log levels like syslog service
 use vars '%levels';
-%levels = ( debug => 7, info => 6, notice => 5, warning => 4, err => 3, crit => 2, alert => 1, emerg => 0 );
+%levels = ( debug => 7, info => 6, notice => 5, warning => 4, err => 3, error => 3, crit => 2, alert => 1, emerg => 0 );
 
 sub new {
 	my( $class, $package, $filename ) = @_;
@@ -56,8 +56,8 @@ sub new {
 sub default_filename() {
 	my $cDir = '/var/log';
 
-	# If this is windoze (XXX 2000/XP? WINBOOTDIR?)
-	if( $^O =~ /Win/i ) {
+	# If this is windoze (XXX 2000/XP? WINBOOTDIR?), not darwin, cygwin, ...
+	if( index($^O, 'Win') >= 0 ) {
 		$cDir = $ENV{'WINBOOTDIR'} || '/windows';
 		$cDir .= '/temp';
 	}
