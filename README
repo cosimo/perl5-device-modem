@@ -1,9 +1,11 @@
 NAME
-    Device::Modem - Perl extension to talk to AT devices via serial ports
+    Device::Modem - Perl extension to talk to AT devices connected via
+    serial port
 
 WARNING
-	This is PRE-ALPHA software, still needs extensive testing and
-    support for generic AT commads, so use it at your own risk!
+       This is C<PRE-ALPHA> software, still needs extensive testing and
+       support for generic AT commads, so use it at your own risk,
+       and without C<ANY> warranty! Have fun.
 
 SYNOPSIS
       use Device::Modem;
@@ -17,15 +19,27 @@ SYNOPSIS
       }
 
       $modem->attention();          # send `attention' sequence (+++)
-
+ 
+      $modem->disl( '022704690' );  # dial number (*NOT WORKING YET*)
+ 
       $modem->echo(1);              # enable local echo
       $modem->echo(0);              # disable it
 
-      $modem->hangup();             # returns modem answer
       $modem->offhook();            # Take off hook (ready to dial)
+      $modem->hangup();             # returns modem answer
       $modem->reset();              # hangup + attention + restore setting 0 (Z0)
+
+      $modem->restore_factory_settings();
+                                    # Handle with care!
+
       $modem->send_init_string();   # Send initialization string
                                     # Now this is fixed to `ATZ0H0V1Q0E0'
+
+      $modem->repeat();             # Repeat last command
+
+      $modem->verbose(0);           # Modem responses are numerical
+      $modem->verbose(1);           # Normal text responses
+ 
       #
       # Some raw at commands
       #

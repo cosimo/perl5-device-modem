@@ -1,4 +1,5 @@
-#
+#!/usr/bin/perl -P- -*-perl-*-
+
 # Device::Modem - a Perl class to interface generic modems (AT-compliant)
 # Copyright (C) 2000-2002 Cosimo Streppone, cosimo@cpan.org
 #
@@ -22,10 +23,10 @@
 # support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.4 2002-03-25 06:47:32 cosimo Exp $
+# $Id: Modem.pm,v 1.5 2002-03-30 15:21:27 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.4 $ =~ /(\d)\.(\d+)/; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.5 $ =~ /(\d)\.(\d+)/; 
 
 use strict;
 use Device::SerialPort;
@@ -45,6 +46,18 @@ $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
 $Device::Modem::PARITY   = 'none';
 $Device::Modem::TIMEOUT  = 500;     # milliseconds;
+
+
+# Setup text and numerical response codes
+@Device::Modem::RESPONSE = ( 'OK', undef, 'RING', 'NO CARRIER', 'ERROR', undef, 'NO DIALTONE', 'BUSY' );
+%Device::Modem::RESPONSE = (
+	'OK'   => 'Command executed without errors',
+	'RING' => 'Detected phone ring',
+	'NO CARRIER'  => 'Link not established or disconnected',
+	'ERROR'       => 'Invalid command or command line too long',
+	'NO DIALTONE' => 'No dial tone, dialing not possible or wrong mode',
+	'BUSY'        => 'Remote terminal busy'
+);
 
 #/**
 # * @method       new
@@ -86,11 +99,35 @@ sub attention {
 	# Send attention sequence
 	$self->atsend('+++');
 
-	# Wait 1000 milliseconds
+	# Wait 500 milliseconds
 	$self->wait(500);
 
 	$self->answer();
 }
+
+sub dial {
+	my($self, $number) = @_;
+
+	unless( $number ) {
+
+		#
+		# XXX Here we could enable ATDL command (dial last number)
+		#
+		$self->log->write( 'warning', 'cannot dial without a number!' );
+		return;
+	}
+
+	# Remove all non [0-9,\s] chars
+	$number =~ s/[^0-9,\s]//g;
+
+	# Dial number and wait for response
+	$self->log->write('info', 'dialing number ['.$number.']' );
+	$self->atsend( 'ATDT' . $number . CR );
+
+	# XXX Check response times here (timeout!)
+	$self->answer();
+}
+
 
 sub echo {
 	my($self, $lEnable) = @_;
@@ -116,12 +153,21 @@ sub hangup {
 sub offhook {
 	my $self = shift;
 
-	$self->log->write('info', 'tooking off hook');
+	$self->log->write('info', 'taking off hook');
 	$self->atsend( 'ATH1' . CR );
-
+	
 	$self->flag('OFFHOOK', 1);
 
 	return 1;
+}
+
+sub repeat {
+	my $self = shift;
+
+	$self->log->write('info', 'repeating last command' );
+	$self->atsend( 'A/' . CR );
+
+	$self->answer();
 }
 
 sub reset {
@@ -139,7 +185,7 @@ sub reset {
 }
 
 sub restore_factory_settings {
-	my $self = shift();
+	my $self = shift;
 
 	$self->log->write('warning', 'restoring factory settings on '.$self->{'serial'} );
 	$self->atsend( 'AT&F' . CR);
@@ -151,7 +197,7 @@ sub verbose {
 	my($self, $lEnable) = @_;
 
 	$self->log->write( 'info', ( $lEnable ? 'enabling' : 'disabling' ) . ' verbose messages' );
-	$self->atsend( ($lEnable ? 'ATV1' : 'ATV0') . CR );
+	$self->atsend( ($lEnable ? 'ATQ0V1' : 'ATQ0V0') . CR );
 
 	$self->answer();
 }
@@ -189,7 +235,7 @@ sub send_init_string {
 
 	$self->attention();
 	
-	$self->atsend( 'ATZH0V1Q0E0' . CR );
+	$self->atsend( 'ATH0ZQ0V1E0' . CR );
 
 	$self->answer();
 }
@@ -383,7 +429,9 @@ Device::Modem - Perl extension to talk to AT devices connected via serial port
   }
 
   $modem->attention();          # send `attention' sequence (+++)
-
+ 
+  $modem->disl( '022704690' );  # dial number (*NOT WORKING YET*)
+ 
   $modem->echo(1);              # enable local echo
   $modem->echo(0);              # disable it
 
@@ -396,6 +444,9 @@ Device::Modem - Perl extension to talk to AT devices connected via serial port
 
   $modem->send_init_string();   # Send initialization string
                                 # Now this is fixed to `ATZ0H0V1Q0E0'
+
+
+  $modem->repeat();             # Repeat last command
 
   $modem->verbose(0);           # Modem responses are numerical
   $modem->verbose(1);           # Normal text responses

@@ -1,7 +1,7 @@
 <HTML>
 <HEAD>
 <TITLE>Device::Modem - Perl extension to talk to AT devices connected via serial port</TITLE>
-<LINK REV="made" HREF="mailto:cosimo@dev.xproject.org">
+<LINK REV="made" HREF="mailto:cosimo@cpan.org">
 </HEAD>
 
 <BODY>
@@ -51,8 +51,13 @@
       print &quot;sorry, no connection with serial port!\n';
   }</PRE>
 <PRE>
-  $modem-&gt;attention();          # send `attention' sequence (+++)</PRE>
+  $modem-&gt;attention();          # send `attention' sequence (+++)
+</PRE>
 <PRE>
+
+  $modem-&gt;disl( '022704690' );  # dial number (*NOT WORKING YET*)</PRE>
+<PRE>
+
   $modem-&gt;echo(1);              # enable local echo
   $modem-&gt;echo(0);              # disable it</PRE>
 <PRE>
@@ -65,6 +70,8 @@
 <PRE>
   $modem-&gt;send_init_string();   # Send initialization string
                                 # Now this is fixed to `ATZ0H0V1Q0E0'</PRE>
+<PRE>
+  $modem-&gt;repeat();             # Repeat last command</PRE>
 <PRE>
   $modem-&gt;verbose(0);           # Modem responses are numerical
   $modem-&gt;verbose(1);           # Normal text responses
