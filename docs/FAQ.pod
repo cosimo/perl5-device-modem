@@ -94,8 +94,8 @@ C<Win32::SerialPort> modules for all low-level communication layer.
 It tries to build a platform independent layer above these two low-level
 modules, so developers don't need to distinguish among different platforms.
 
-It's been reported to work on C<Win32>, C<Linux>, C<FreeBSD>, C<NetBSD>,
-C<OpenBSD>, C<ARM-Linux> and C<Solaris>.
+It's been reported to work on C<Win32>, C<Linux>, C<Mac OS X>, C<FreeBSD>,
+C<NetBSD>, C<OpenBSD>, C<ARM-Linux> and C<Solaris>.
 
 =head2 Can I use it for my commercial application?
 
@@ -182,3 +182,4 @@ Uh.
 
 Please contact me, so I can improve my software design, ideas and coding,
 but only if you explain the reasons of your criticism. Thank you.
+
