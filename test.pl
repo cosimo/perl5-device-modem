@@ -34,6 +34,7 @@ if( open CACHED_CONFIG, '< .config' ) {
 if( $config{'tty'} ) {
 
 	print "Your serial port is `$config{'tty'}' (cached)\n";
+	print "Link baud rate   is `$config{'baud'}' (cached)\n";
 
 } else {
 
@@ -42,10 +43,12 @@ if( $config{'tty'} ) {
 
 	print "What is your serial port? [$config{'tty'}] ";
 	chomp( $port = <STDIN> );
+
 	$port ||= $config{'tty'};
+	$baud ||= $config{'baud'};
 
 	if( open( CONFIG, '>.config' ) ) {
-		print CONFIG "tty\t$port\n";
+		print CONFIG "tty\t$port\n", "baud\t$baud\n";
 		close CONFIG;
 	}
 
@@ -55,7 +58,7 @@ if( $config{'tty'} ) {
 # BEGIN OF TESTS
 # -----------------------------------------------------
 
-my $modem = new Device::Modem( serial => $port );
+my $modem = new Device::Modem( port => $port );
 
 if( $modem->connect ) {
 	print "ok 2\n";
@@ -65,9 +68,8 @@ if( $modem->connect ) {
 }
 
 # Try with AT escape code
-$modem->atsend('+++');
-my $ans = $modem->answer();
-print 'sending +++, modem says `', $ans, "'\n";
+my $ans = $modem->attention();
+print 'sending attention, modem says `', $ans, "'\n";
 
 if( $ans eq '' ) {
 	print "ok 3\n";

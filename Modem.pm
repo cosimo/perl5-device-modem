@@ -23,10 +23,10 @@
 # support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.5 2002-03-30 15:21:27 cosimo Exp $
+# $Id: Modem.pm,v 1.6 2002-04-03 20:02:37 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.5 $ =~ /(\d)\.(\d+)/; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.6 $ =~ /(\d)\.(\d+)/; 
 
 use strict;
 use Device::SerialPort;
@@ -41,7 +41,7 @@ use constant CR => "\r";
 
 # Connection defaults
 $Device::Modem::DEFAULT_PORT = ( $^O =~ /win32/i ) ? 'COM1' : '/dev/modem';
-$Device::Modem::BAUDRATE = 9600;
+$Device::Modem::BAUDRATE = 57600;
 $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
 $Device::Modem::PARITY   = 'none';
@@ -59,24 +59,13 @@ $Device::Modem::TIMEOUT  = 500;     # milliseconds;
 	'BUSY'        => 'Remote terminal busy'
 );
 
-#/**
-# * @method       new
-# *
-# * AT compliant object constructor (prepare only object)
-# * via serial port
-# *
-# * @param        reference to hash of options, that must contain:
-# *     SERIAL    Which serial port the at is connected to (default = $DEFAULT_PORT)
-# *     
-# *     
-# * @return       reference to new at object
-# */
+# object constructor (prepare only object)
 sub new {
 	my($proto,%aOpt) = @_;                  # Get reference to object
 	                                        # Options of object
 	my $class = ref($proto) || $proto;      # Get reference to class
 
-	$aOpt{'serial'} ||= $Device::Modem::DEFAULT_PORT;
+	$aOpt{'port'} ||= $Device::Modem::DEFAULT_PORT;
 
 	# Instance log object
 	$aOpt{'log'} ||= 'file';
@@ -85,7 +74,7 @@ sub new {
 	my $package = 'Device::Modem::Log::'.ucfirst lc $method;
 	eval { require $logclass; };
 	unless($@) {
-		$aOpt{'_log'} = $package->new( split ',', $options );
+		$aOpt{'_log'} = $package->new( split ',', ($options||'') );
 	}
 
 	bless \%aOpt, $class;                   # Instance $class object
@@ -173,7 +162,7 @@ sub repeat {
 sub reset {
 	my $self = shift;
 
-	$self->log->write('warning', 'resetting modem on '.$self->{'serial'} );
+	$self->log->write('warning', 'resetting modem on '.$self->{'port'} );
 
 	$self->hangup();
 
@@ -187,7 +176,7 @@ sub reset {
 sub restore_factory_settings {
 	my $self = shift;
 
-	$self->log->write('warning', 'restoring factory settings on '.$self->{'serial'} );
+	$self->log->write('warning', 'restoring factory settings on '.$self->{'port'} );
 	$self->atsend( 'AT&F' . CR);
 
 	$self->answer();
@@ -235,7 +224,7 @@ sub send_init_string {
 
 	$self->attention();
 	
-	$self->atsend( 'ATH0ZQ0V1E0' . CR );
+	$self->atsend( 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4' . CR );
 
 	$self->answer();
 }
@@ -244,22 +233,13 @@ sub log {
 	shift()->{'_log'}
 }
 
-#/**
-# * @method       connect
-# *
-# * Connect on serial port to at device
-# * via serial port
-# *
-# * @param        reference to hash of options, that must contain:
-# *     BAUDRATE  speed of communication (default 9600)
-# *     DATABITS  byte length (default 8)
-# *     STOPBITS  stop bits (default 1)
-# *     PARITY    ... (default 'none')
-# *
-# * @return       success of connection
-# */
 sub connect {
-	my ($me,%aOpt) = @_;
+	my $me = shift();
+
+	my %aOpt = ();
+	if( @_ ) {
+		%aOpt = @_;
+	}
 
 	my $lOk = 0;
 
@@ -273,11 +253,11 @@ sub connect {
 	$me->{'_comm_options'} = \%aOpt;
 	
 	# Connect on serial
-	$me->port( new Device::SerialPort($me->{'serial'}) );
+	$me->port( new Device::SerialPort($me->{'port'}) );
 
 	# Check connection
 	if( ref( $me->port ) ne 'Device::SerialPort' ) {
-		$me->log->write( 'error', '*FAILED* connect on '.$me->{'serial'} );
+		$me->log->write( 'error', '*FAILED* connect on '.$me->{'port'} );
 		return $lOk;
 	}
 
@@ -310,53 +290,28 @@ sub connect {
 }
 
 
-#/*
-# * @method      options
-# *
-# * returns Device::SerialPort reference to hash options
-# *
-# * @return      hashref of options
-# */
+# returns Device::SerialPort reference to hash options
 sub options {
 	my $self = shift();
 	@_ ? $self->{'_comm_options'} = shift()
 	   : $self->{'_comm_options'};
 }
 
-#/*
-# * @method      port
-# *
-# * returns Device::SerialPort object handle
-# *
-# * @return      Device::SerialPort object handle
-# * @see         Device::SerialPort
-# */
+# returns Device::SerialPort object handle
 sub port {
 	my $self = shift();
 	@_ ? $self->{'_comm_object'} = shift()
 	   : $self->{'_comm_object'};
 }
 
-#/**
-# * @method       disconnect
-# *
-# * Disconnect serial port
-# */
+# disconnect serial port
 sub disconnect {
 	my $me = shift;
 	$me->port->close();
-	$me->log->write('info', 'Disconnected from '.$me->{'serial'} );
+	$me->log->write('info', 'Disconnected from '.$me->{'port'} );
 }
 
-#/**
-# * @method       atsend
-# *
-# * Send AT command to device on serial port
-# *
-# * @param	msg
-# *   message to send (for now must include CR)
-# *
-# */
+# Send AT command to device on serial port (command must include CR for now)
 sub atsend {
 	my( $me, $msg ) = @_;
 	my $cnt = 0;
@@ -372,13 +327,8 @@ sub atsend {
 	return $cnt == length $msg;
 }
 
-#/**
-# * @method        answer
-# *
-# * Take strings from the device until a pattern
-# * is encountered or a timeout happens.
-# *
-# */
+# answer() takes strings from the device until a pattern
+# is encountered or a timeout happens.
 sub answer {
 	my $me = shift;
 	my $buff;
