@@ -21,10 +21,10 @@
 # support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.8 2002-04-03 21:30:44 cosimo Exp $
+# $Id: Modem.pm,v 1.9 2002-04-05 21:27:46 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.8 $ =~ /(\d)\.(\d+)/; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.9 $ =~ /(\d)\.(\d+)/; 
 
 use strict;
 use Device::SerialPort;
@@ -219,11 +219,8 @@ sub reset_flags {
 
 sub send_init_string {
 	my($self, $cInit) = @_;
-
 	$self->attention();
-	
 	$self->atsend( 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4' . CR );
-
 	$self->answer();
 }
 
@@ -282,8 +279,11 @@ sub connect {
 
 	$me-> send_init_string();
 
+	# Disable local echo
+	$me-> echo(0);
+
 	$me-> log -> write('info', 'Ok connected' );
-	$me->{'CONNECTED'} = 1;
+	$me-> {'CONNECTED'} = 1;
 
 }
 
