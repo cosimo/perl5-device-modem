@@ -138,6 +138,25 @@ In case of doubt, send the output of:
 
 Thank you.
 
+=head2 Why I keep getting "can't open device: /dev/xxxxx at .../Modem.pm line 468" errors ?
+
+First of all, be sure to use B<Device::Modem version 1.35+>.
+Probably you don't have the correct permissions to access your modem device
+(usually /dev/modem, or /dev/ttyS0 on unix and COM1/COM2/... on windows).
+Or you are trying to use the examples that come with Device::Modem distribution
+with an older version (Device::Modem <= 1.33).
+In this case, you should upgrade to Device::Modem 1.35+.
+
+=head2 Why I get the error "Can't call method "purge_all" on an undefined value at .../Modem.pm line 545" ?
+
+Again, B<upgrade to Device::Modem version 1.35+>.
+If you get this error, it means that the communication port could not be opened.
+Most probably you don't have permissions to access your serial port, or you have
+used a wrong device name (check your device entry in C</dev> folder).
+Maybe you are trying to use the examples that come with Device::Modem distribution
+with an older version (Device::Modem <= 1.33).
+In this case, you should upgrade to Device::Modem 1.35+.
+
 =head2 This module is pretty slow. What can I do?
 
 Make sure you are using that latest version. From version 1.30, the main "send-command" / "wait-answer"
