@@ -138,10 +138,19 @@ In case of doubt, send the output of:
 
 Thank you.
 
+=head2 This module is pretty slow. What can I do?
+
+Make sure you are using that latest version. From version 1.30, the main "send-command" / "wait-answer"
+cycle has been sensibly improved for speed, though you now have to specify a timeout if you want
+the module to wait an answer if modem is not ready.
+
+Probably this is the better compromise...
+
 =head2 Can I make a [insert_your_preferred_number_here] euro donation to you for this fantastic module?
 
 Oh, yes!
 Please feel free to contact L<cosimo@cpan.org> to decide details about this... :-)
+Or, if you have nothing wrong with that, go to my <A HREF="http://www.amazon.com">Amazon wishlist</A>.
 
 =head2 I think you are a ?#!x$*z!#(!* and your software sucks
 
