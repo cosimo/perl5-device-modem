@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.29 2003-10-15 23:42:38 cosimo Exp $
+# $Id: Modem.pm,v 1.30 2003-11-08 17:59:12 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.29 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.30 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -46,8 +46,7 @@ use strict;
 # Constants definition
 use constant CTRL_Z => chr(26);
 
-# TODO
-# Allow to redefine CR to "\r", "\n" or "\r\n"
+# TODO: Allow to redefine CR to "\r", "\n" or "\r\n"
 use constant CR => "\r";
 
 # Connection defaults
@@ -211,16 +210,21 @@ sub is_active {
 	# Modem is active if already connected to a line
 	if( $self->flag('CARRIER') ) {
 
-
 		$self->log->write('info', 'carrier is '.$self->flag('CARRIER').', modem is connected, it should be active');
 		$lOk = 1;
 
 	} else {
 
+		# XXX Old mode to test modem ... 
 		# Try sending an echo enable|disable command
-		$self->attention();
-		$self->verbose(0);
-		$lOk = $self->verbose(1);
+		#$self->attention();
+		#$self->verbose(0);
+		#$lOk = $self->verbose(1);
+
+		# If DSR signal is on, modem is active
+		my %sig = $self->status();
+		$lOk = $sig{DSR};
+		undef %sig;
 
 		# If we have no success, try to reset
 		if( ! $lOk ) {
@@ -544,7 +548,7 @@ sub atsend {
 	$cnt = $me->port->write($msg);
 	$me->port->write_drain() unless $me->ostype eq 'windoze';
 
-	$me->log->write('verbose', 'atsend: wrote '.$cnt.'/'.length($msg).' chars');
+	$me->log->write('debug', 'atsend: wrote '.$cnt.'/'.length($msg).' chars');
 
 	# If wrote all chars of `msg', we are successful
 	return $cnt == length $msg;
@@ -555,61 +559,60 @@ sub atsend {
 sub _answer {
 	my $me = shift;
 	my($expect, $timeout) = @_;
-
-	if( $timeout < 200 ) {
-		$timeout = 200;                           # default wait (ms)
-	}
-
-	my $time_slice = 100;                       # single cycle wait time
-	my $max_cycles = $timeout / $time_slice;
-	my $max_idle_cycles = $max_cycles;
+	my $time_slice = 0.1;                       # single cycle wait time
 
 	# If we expect something, we must first match against serial input
 	my $done = (defined $expect and $expect ne '');
 
-	$time_slice /= 1000;
-
-	$me->log->write('verbose', 'answer: expecting ['.($expect||'').'] or timeout ['.$timeout.']' );
+	#$me->log->write('debug', 'answer: expecting ['.($expect||'').']'.($timeout ? ' or '.($timeout/1000).' seconds timeout' : '' ) );
 
 	# Main read cycle
 	my $cycles = 0;
 	my $idle_cycles = 0;
-
 	my $answer;
+	my $start_time = time();
+	my $end_time   = 0;
+
+	# If timeout was defined, check max time (timeout is in milliseconds)
+	#$me->log->write('debug', 'answer: timeout value is '.$timeout);
+
+	if( defined $timeout && $timeout > 0 ) {
+		$end_time = $start_time + ($timeout / 1000);
+		#$me->log->write( debug => 'answer: end time set to '.$end_time );
+	}
+
 	do {
-		my($howmany, $what) = $me->port->read(100);
+
+		my($howmany, $what) = $me->port->read(10);
 
 		# Timeout count incremented only on empty readings
 		if( defined $what && $howmany > 0 ) {
+
+			# Add received chars to answer string
 			$answer .= $what;
-			$idle_cycles = 1;
-			$max_idle_cycles = 3;
-		} else {
-			$idle_cycles++;
-		}
 
-		# Check if buffer matches "expect string"
-		#$done = $expect
-		#	? $answer =~ /$expect/
-		#	: $idle_cycles == $max_idle_cycles;
-		if( defined $expect ) {
-			if( defined $answer && $answer =~ $expect ) {
-				$done++;
+			# Check if buffer matches "expect string"
+			if( defined $expect ) {
+				$done = ( defined $answer && $answer =~ $expect ) ? 1 : 0;
 			}
+
+			$me->wait($time_slice) unless $done;
+
 		} else {
-			if( $idle_cycles >= $max_idle_cycles ) {
-				$done++;
-			}
-		}
-		if( ++$cycles >= $max_cycles ) {
-			$done++;
+
+			$done = 1;
+
 		}
 
-		$me->log->write('debug', 'answer: idle('.$idle_cycles.'/'.$max_idle_cycles.') cycles('.$cycles.'/'.$max_cycles.') read('.($answer||'').') matched('.($done>0?1:0).')');
+		# Check if we reached max time for timeout
+		if( $end_time > 0 ) {
+			$done = ( time() >= $end_time ) ? 1 : 0;
+		}
 
-		select(undef, undef, undef, $time_slice) unless $done;
+		#$me->log->write('debug', 'done = '.$done );
+		#$me->log->write('debug', 'end_time='.$end_time.' now='.time().' start_time='.$start_time );
 
-	} while( not $done );
+	} while (not $done);
 
 	$me->log->write('debug', 'answer: read ['.($answer||'').']' );
 
@@ -622,8 +625,8 @@ sub _answer {
 
 sub answer {
 
-	my $self = shift();
-	my $answer = $self->_answer(@_);
+	my $me = shift();
+	my $answer = $me->_answer(@_);
 
 	# Trim result of beginning and ending CR+LF (XXX)
 	if( defined $answer ) {
@@ -646,12 +649,9 @@ sub parse_answer {
 	my $buff = $me->answer( @_ );
 
 	# Separate response code from information
-#	my @response = split CR, $buff;
 	my @buff = split /[\r\n]+/o, $buff;
 
 	# Remove all empty lines before/after response
-#	shift @response while( $response[0] eq CR() );
-#	pop   @response while( $response[-1] eq CR() );
 	shift @buff while $buff[0]  =~ /^[\r\n]+/o;
 	pop   @buff while $buff[-1] =~ /^[\r\n]+/o;
 
@@ -670,8 +670,6 @@ sub parse_answer {
 
 1;
 
-
-__END__
 
 =head1 NAME
 
@@ -1003,6 +1001,12 @@ Usage:
 Can be used to check if there is a modem attached to your computer.
 If modem is alive and responding (on serial link, not to a remote call),
 C<is_active()> returns true (1), otherwise returns false (0).
+
+Test of modem activity is done through DSR (Data Set Ready) signal. If
+this signal is in off state, modem is probably turned off, or not working.
+From my tests I've found that DSR stays in "on" state after more or less
+one second I turn off my modem, so know you know that.
+
 Example:
 
 	if( $modem->is_active() ) {
