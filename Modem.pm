@@ -9,14 +9,22 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.10 2002-04-09 22:10:56 cosimo Exp $
+# $Id: Modem.pm,v 1.11 2002-04-14 09:26:45 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.10 $ =~ /(\d)\.(\d+)/; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.11 $ =~ /(\d)\.(\d+)/; 
+
+BEGIN {
+	if( $^O =~ /Win/i ) {
+		require Win32::SerialPort;
+		import  Win32::SerialPort;
+	} else {
+		require Device::SerialPort;
+		import  Device::SerialPort;
+	}
+}
 
 use strict;
-use Device::SerialPort;
-
 
 # Constants definition
 use constant CTRL_Z => chr(26);
@@ -51,16 +59,23 @@ sub new {
 	                                        # Options of object
 	my $class = ref($proto) || $proto;      # Get reference to class
 
+	$aOpt{'ostype'} = $^O;                  # Store OSTYPE in object
+	$aOpt{'ostype'} =~ /Win/i and $aOpt{'ostype'} = 'windoze';
+
 	$aOpt{'port'} ||= $Device::Modem::DEFAULT_PORT;
 
 	# Instance log object
 	$aOpt{'log'} ||= 'file';
-	my($method, $options) = split ',', delete $aOpt{'log'};
+
+	# Force logging to file if this is windoze and user requested syslog mechanism
+	$aOpt{'log'} = 'file' if( $aOpt{'ostype'} eq 'windoze' && $aOpt{'log'} =~ /syslog/i );
+
+	my($method, @options) = split ',', delete $aOpt{'log'};
 	my $logclass = 'Device/Modem/Log/'.ucfirst(lc $method).'.pm';
 	my $package = 'Device::Modem::Log::'.ucfirst lc $method;
 	eval { require $logclass; };
 	unless($@) {
-		$aOpt{'_log'} = $package->new( $class, ( split ',', ($options||'') ) );
+		$aOpt{'_log'} = $package->new( $class, @options );
 	}
 
 	bless \%aOpt, $class;                   # Instance $class object
@@ -235,11 +250,15 @@ sub connect {
 	# Store communication options in object
 	$me->{'_comm_options'} = \%aOpt;
 	
-	# Connect on serial
-	$me->port( new Device::SerialPort($me->{'port'}) );
+	# Connect on serial (use different mod for win32)
+	if( $me->ostype eq 'windoze' ) {
+		$me->port( new Win32::SerialPort($me->{'port'}) );
+	} else {
+		$me->port( new Device::SerialPort($me->{'port'}) );
+	}
 
 	# Check connection
-	if( ref( $me->port ) ne 'Device::SerialPort' ) {
+	unless( ref $me->port ) {
 		$me->log->write( 'error', '*FAILED* connect on '.$me->{'port'} );
 		return $lOk;
 	}
@@ -275,6 +294,12 @@ sub connect {
 
 }
 
+# $^O is stored into object
+sub ostype {
+	my $self = shift;
+	$self->{'ostype'} =~ /Win/ and return 'windoze';
+	$self->{'ostype'};
+}
 
 # returns Device::SerialPort reference to hash options
 sub options {
@@ -305,7 +330,7 @@ sub atsend {
 	# Write message on port
 	$me->port->purge_all();
 	$cnt = $me->port->write($msg);
-	$me->port->write_drain();
+	$me->port->write_drain() unless $me->ostype eq 'windoze';
 
 	$me->log->write('info', 'atsend: wrote '.$cnt.'/'.length($msg).' chars');
 
@@ -446,7 +471,7 @@ based on serial connections.
 
 =over 4
 
-=item Device::SerialPort
+=item Device::SerialPort (Win32::SerialPort for Windows machines)
 
 =back
 
@@ -459,6 +484,14 @@ None
 =head1 TO-DO
 
 =over 4
+
+=item *
+
+Logging mechanism
+
+Explain which type of logging hooks you can use with Device::Modem
+and its sub-classes (Device::Gsm). For now, they are only `file'
+and `syslog'
 
 =item *
 
@@ -496,6 +529,6 @@ modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<Device::SerialPort>, L<perl>.
+L<Device::SerialPort>, L<Win32::SerialPort>, L<perl>.
 
 =cut
