@@ -1,7 +1,7 @@
 <HTML>
 <HEAD>
 <TITLE>Device::Modem - Perl extension to talk to modem devices connected via serial port</TITLE>
-<LINK REV="made" HREF="mailto:">
+<LINK REV="made" HREF="mailto:cosimo@cpan.org">
 </HEAD>
 
 <BODY>
@@ -45,17 +45,18 @@
 <PRE>
   use Device::Modem;</PRE>
 <PRE>
-  my $modem = new Device::Modem( port =&gt; '/dev/ttyS1' )</PRE>
+  my $modem = new Device::Modem( port =&gt; '/dev/ttyS1' );</PRE>
 <PRE>
   if( $modem-&gt;connect( baudrate =&gt; 9600 ) ) {
       print &quot;connected!\n&quot;;
   } else {
-      print &quot;sorry, no connection with serial port!\n';
+      print &quot;sorry, no connection with serial port!\n&quot;;
   }</PRE>
 <PRE>
   $modem-&gt;attention();          # send `attention' sequence (+++)</PRE>
 <PRE>
-  $modem-&gt;dial('02270469012');  # dial phone number</PRE>
+  $modem-&gt;dial('02270469012');  # dial phone number
+  $modem-&gt;dial(3);              # 1-digit parameter = dial number stored in memory 3</PRE>
 <PRE>
   $modem-&gt;echo(1);              # enable local echo
   $modem-&gt;echo(0);              # disable it</PRE>
@@ -68,11 +69,22 @@
 <PRE>
   $modem-&gt;reset();              # hangup + attention + restore setting 0 (Z0)</PRE>
 <PRE>
-  $modem-&gt;restore_factory_settings();
-                                # Handle with care!</PRE>
+  $modem-&gt;restore_factory_settings();  # Handle with care!
+  $modem-&gt;restore_factory_settings(1); # Same with preset profile 1 (can be 0 or 1)</PRE>
 <PRE>
   $modem-&gt;send_init_string();   # Send initialization string
                                 # Now this is fixed to 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &amp;C0 X4'</PRE>
+<PRE>
+  # Get/Set value of S1 register
+  my $S1 = $modem-&gt;S_register(1);
+  my $S1 = $modem-&gt;S_register(1, 55); # Don't do that if you definitely don't know!</PRE>
+<PRE>
+  # Get status of managed signals (CTS, DSR, RLSD, RING)
+  my %signal = $modem-&gt;status();
+  if( $signal{DSR} ) { print &quot;Data Set Ready signal active!\n&quot;; }</PRE>
+<PRE>
+  # Stores this number in modem memory number 3
+  $modem-&gt;store_number(3, '01005552817');</PRE>
 <PRE>
   $modem-&gt;repeat();             # Repeat last command</PRE>
 <PRE>
@@ -106,6 +118,11 @@ to be inherited by sub classes (as Device::Gsm), which are based on serial conne
 <H1><A NAME="todo">TO-DO</A></H1>
 <UL>
 <LI>
+Improve question/answer cycle
+<P>Do something better on question/answer routines with better
+initializations, timeout handling and signals lookup.</P>
+<P></P>
+<LI>
 Document log interface
 <P>Explain which type of logging hooks you can use with Device::Modem
 and its sub-classes (Device::Gsm). For now, they are only `file'
@@ -117,9 +134,6 @@ AutoScan
 when `autoscan' is invoked, creating a `profile' of the
 current device, with list of supported commands, and database
 of brand/model-specific commands</P>
-<P></P>
-<LI>
-Test `parse_answer()' method
 <P></P>
 <LI>
 Many more to come!

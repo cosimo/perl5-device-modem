@@ -35,3 +35,11 @@ Revision history for Perl extension Device::Modem.
 
 1.15  Tue Jun 04 23:20:12 CEST 2002
 	- modified makefile/test procedure to pass automated cpan tests
+
+1.16  Mon Jun 17 21:58:22 CEST 2002
+	- added S_register() method to read/write S-registers;
+	- store_number() to store an address-book number (cannot retrieve yet);
+	- restore_factory_settings() now accepts a number of profile (default=0);
+	- dial() now dials also address book numbers (only if supplied number
+	  is composed of 1 digit: the address book position, from 0 to 9).
+        - status() method added, which looks up CTS, DSR, RLSD and RING signals;

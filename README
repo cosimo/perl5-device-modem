@@ -10,17 +10,18 @@ WARNING
 SYNOPSIS
       use Device::Modem;
 
-      my $modem = new Device::Modem( port => '/dev/ttyS1' )
+      my $modem = new Device::Modem( port => '/dev/ttyS1' );
 
       if( $modem->connect( baudrate => 9600 ) ) {
           print "connected!\n";
       } else {
-          print "sorry, no connection with serial port!\n';
+          print "sorry, no connection with serial port!\n";
       }
 
       $modem->attention();          # send `attention' sequence (+++)
 
       $modem->dial('02270469012');  # dial phone number
+      $modem->dial(3);              # 1-digit parameter = dial number stored in memory 3
 
       $modem->echo(1);              # enable local echo
       $modem->echo(0);              # disable it
@@ -33,11 +34,22 @@ SYNOPSIS
 
       $modem->reset();              # hangup + attention + restore setting 0 (Z0)
 
-      $modem->restore_factory_settings();
-                                    # Handle with care!
+      $modem->restore_factory_settings();  # Handle with care!
+      $modem->restore_factory_settings(1); # Same with preset profile 1 (can be 0 or 1)
 
       $modem->send_init_string();   # Send initialization string
                                     # Now this is fixed to 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4'
+
+      # Get/Set value of S1 register
+      my $S1 = $modem->S_register(1);
+      my $S1 = $modem->S_register(1, 55); # Don't do that if you definitely don't know!
+
+      # Get status of managed signals (CTS, DSR, RLSD, RING)
+      my %signal = $modem->status();
+      if( $signal{DSR} ) { print "Data Set Ready signal active!\n"; }
+
+      # Stores this number in modem memory number 3
+      $modem->store_number(3, '01005552817');
 
       $modem->repeat();             # Repeat last command
 
@@ -66,6 +78,11 @@ DESCRIPTION
     None
 
 TO-DO
+    *   Improve question/answer cycle
+
+        Do something better on question/answer routines with better
+        initializations, timeout handling and signals lookup.
+
     *   Document log interface
 
         Explain which type of logging hooks you can use with Device::Modem
@@ -78,8 +95,6 @@ TO-DO
         `autoscan' is invoked, creating a `profile' of the current device,
         with list of supported commands, and database of
         brand/model-specific commands
-
-    *   Test `parse_answer()' method
 
     *   Many more to come!
 
