@@ -1,7 +1,6 @@
-# $Id: File.pm,v 1.1.1.1 2002-03-20 21:13:49 cosimo Exp $
+# $Id: File.pm,v 1.2 2002-03-21 06:40:50 cosimo Exp $
 package Device::Modem::Log::File;
-
-$VERSION = '0.01';
+$VERSION = substr q$Revision: 1.2 $, 10;
 
 use strict;
 use warnings;
@@ -52,13 +51,21 @@ Device::Modem::Log::File - Device::Modem log hook class for logging devices acti
 
 This is meant for an example log class to be hooked to Device::Modem
 to provide one's favourite logging mechanism.
-You just have to implement your own `new()', `write()' and `close()' methods.
+You just have to implement your own C<new()>, C<write()> and C<close()> methods.
 
-Default text file is `/var/log/modem.log'.
+Default text file is C</var/log/modem.log>.
+
+Loaded automatically by B<Device::Modem> class when an object
+is instantiated, and it is the B<default> logging mechanism for
+B<Device::Modem> class.
+
+=head2 REQUIRES
+
+Device::Modem
 
 =head2 EXPORT
 
-None by default.
+None
 
 =head1 AUTHOR
 
@@ -67,5 +74,6 @@ Cosimo Streppone, cosimo@cpan.org
 =head1 SEE ALSO
 
 Device::Modem
+Device::Modem::Log::Syslog
 
 =cut

@@ -1,7 +1,10 @@
-# $Id: Syslog.pm,v 1.1.1.1 2002-03-20 21:13:49 cosimo Exp $
-package Device::At::Log::Syslog;
-
-$VERSION = '0.01';
+# $Id: Syslog.pm,v 1.2 2002-03-21 06:40:50 cosimo Exp $
+#
+# Device::Modem log class that logs modem activity
+# on common system log
+#
+package Device::Modem::Log::Syslog;
+$VERSION = substr q$Revision: 1.2 $, 10;
 
 use strict;
 use warnings;
@@ -10,9 +13,9 @@ use Sys::Syslog ();
 
 sub new {
 	Sys::Syslog::setlogsock('unix');
-	Sys::Syslog::openlog('Device::At', 'cons,pid', 'user');
+	Sys::Syslog::openlog('Device::Modem', 'cons,pid', 'user');
 	my $loglevel = 'info';
-	bless \$loglevel, 'Device::At::Log::Syslog';
+	bless \$loglevel, 'Device::Modem::Log::Syslog';
 }
 
 sub write($$) {
@@ -27,39 +30,44 @@ sub close {
 
 
 
-# Preloaded methods go here.
-
-1;
+2703;
 
 __END__
 
 =head1 NAME
 
-Device::At::Log::Syslog - Device::At log hook class for logging devices activity to syslog 
+Device::Modem::Log::Syslog - Device::Modem log hook class for logging devices activity to syslog 
 
 =head1 SYNOPSIS
 
-  use Device::At;
+  use Device::Modem;
 
-  my $at_box = Device::At->new( log => 'syslog', ... );
+  my $box = new Device::Modem( log => 'syslog', ... );
   ...
 
 =head1 DESCRIPTION
 
-This is meant for an example log class to be hooked to Device::At
-to provide one's favourite logging mechanism.
-You just have to implement your own `write()' method.
+Example log class for B<Device::Modem> that logs all
+modem activity, commands, ... to B<syslog>
+
+It is loaded automatically at B<Device::Modem> startup,
+only if you specify C<syslog> value to C<log> parameter.
+
+=head2 REQUIRES
+
+Sys::Syslog
 
 =head2 EXPORT
 
-None by default.
+None
 
 =head1 AUTHOR
 
-Cosimo Streppone, cosimo@streppone.it 
+Cosimo Streppone, cosimo@cpan.org
 
 =head1 SEE ALSO
 
-Device::At
+Device::Modem
+Device::Modem::Log::File
 
 =cut
