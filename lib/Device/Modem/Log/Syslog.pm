@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Syslog.pm,v 1.9 2003-09-14 09:27:20 cosimo Exp $
+# $Id: Syslog.pm,v 1.10 2003-11-08 17:57:20 cosimo Exp $
 
 package Device::Modem::Log::Syslog;
-$VERSION = substr q$Revision: 1.9 $, 10;
+$VERSION = substr q$Revision: 1.10 $, 10;
 
 use strict;
 use Sys::Syslog ();
@@ -44,7 +44,7 @@ sub loglevel {
 		$$self = $newlevel;
 
 		# Set new logmask
-		my $logmask = (1 << ($levels{$newlevel} + 1)) - 1;
+		my $logmask = 0xFF; #(1 << ($levels{$newlevel} + 1)) - 1;
 		Sys::Syslog::setlogmask( $logmask );
 
 	} else {
@@ -56,9 +56,6 @@ sub loglevel {
 
 sub write($$) {
 	my($self, $level, @msg) = @_;
-	if( lc($level) eq 'verbose' ) {
-		$level = 'info';
-	}
 	Sys::Syslog::syslog( $level, @msg );
 	return 1;
 }
