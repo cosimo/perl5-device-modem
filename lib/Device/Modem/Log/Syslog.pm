@@ -1,10 +1,10 @@
-# $Id: Syslog.pm,v 1.4 2002-04-09 22:18:17 cosimo Exp $
+# $Id: Syslog.pm,v 1.5 2002-09-03 20:01:14 cosimo Exp $
 #
 # Device::Modem log class that logs modem activity
 # on common system log
 #
 package Device::Modem::Log::Syslog;
-$VERSION = substr q$Revision: 1.4 $, 10;
+$VERSION = substr q$Revision: 1.5 $, 10;
 
 use strict;
 use warnings;
@@ -30,8 +30,7 @@ sub close {
 }
 
 
-
-2703;
+1;
 
 __END__
 
