@@ -1,12 +1,22 @@
 #!/usr/bin/perl
 #
-# $Id: shell.pl,v 1.2 2002-03-25 06:44:15 cosimo Exp $
+# $Id: shell.pl,v 1.3 2002-03-25 06:52:58 cosimo Exp $
 #
 
 use strict;
 use Device::Modem;
 
-my $port = '/dev/ttyS0';
+if( $> && $< ) {
+	print "\n*** REMEMBER to run this program as root if you cannot connect on serial port!\n";
+	sleep 3;
+}
+
+print "Your serial port? [/dev/ttyS1]\n";
+my $port = <STDIN>;
+chomp $port;
+
+$port ||= '/dev/ttyS1';
+
 my $modem = new Device::Modem ( serial => $port, baud => 9600 );
 my $stop;
 
@@ -17,7 +27,7 @@ print "Connected to $port.\n\n";
 
 while( not $stop ) {
 
-	print "insert AT command to send\n";
+	print "insert AT command (`stop' to quit)\n";
 	print "> ";
 
 	my $AT = <STDIN>;
@@ -27,7 +37,7 @@ while( not $stop ) {
 		$stop = 1;
 	} else {
 		$modem->atsend( $AT . "\r\n" );
-		print "\n", $modem->answer(), "\n";
+		print $modem->answer(), "\n";
 
 	}
 
