@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.18 2002-09-03 20:03:27 cosimo Exp $
+# $Id: Modem.pm,v 1.19 2002-09-11 22:17:10 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.18 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.19 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -539,35 +539,42 @@ sub answer {
 	my $me = shift;
 	my($expect, $timeout) = @_;
 
-	$timeout ||= 200;                           # default wait
+	$timeout ||= 200;                           # default wait (ms)
 	my $time_slice = 100;                       # single cycle wait time
 
-	my $cycles = $timeout / $time_slice;
+	my $max_idle_cycles = $timeout / $time_slice;
 
 	# If we expect something, we must first match against serial input
-	my $matched = (defined $expect and $expect ne '');
+	my $done = (defined $expect and $expect ne '');
 
 	$time_slice /= 1000;
 
 	$me->log->write('info', 'answer: expecting ['.($expect||'').'] or timeout ['.$timeout.']' );
 
 	# Main read cycle
-	my $cycle = 0;
+	my $idle_cycles = 1;
 	my $answer;
 	do {
 		my($howmany, $what) = $me->port->read(100);
-		$answer .= $what if defined $what;
+
+		# Timeout count incremented only on empty readings
+		if( defined $what && $howmany > 0 ) {
+			$answer .= $what;
+			$idle_cycles = 1;
+		} else {
+			$idle_cycles++;
+		}
 
 		# Check if buffer matches "expect string"
-		$matched = $expect
+		$done = $expect
 			? $answer =~ /$expect/
-			: length $answer;
+			: $idle_cycles == $max_idle_cycles;
 
-		$me->log->write('debug', 'answer: cycle='.$cycle.'/'.$cycles.' read_till_now='.$answer.' matched='.$matched);
+		$me->log->write('debug', 'answer: idle_c='.$idle_cycles.'/'.$max_idle_cycles.' read_till_now='.$answer.' matched='.$done);
 
-		select undef, undef, undef, 0.1;
+		select undef, undef, undef, $time_slice unless $done;
 
-	} while( ++$cycle < $cycles and not $matched and not $answer );
+	} while( not $done );
 
 	$me->log->write('debug', 'answer: read ['.$answer.']' );
 
@@ -728,13 +735,6 @@ None
 =head1 TO-DO
 
 =over 4
-
-=item *
-
-Improve question/answer cycle
-
-Do something better on question/answer routines with better
-initializations, timeout handling and signals lookup.
 
 =item *
 
