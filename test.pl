@@ -122,12 +122,18 @@ if( $modem->echo(1) && $modem->echo(0) ) {
 }
 
 print 'testing offhook function...', "\n";
-print $modem->offhook();
+if( $modem->offhook() ) {
+	print "ok 8\n";
+} else {
+	print "not ok 8\n";
+}
 
 sleep(1);
 
 print 'hanging up...', "\n";
-print $modem->hangup();
-
-print "ok 8\n";
+if( $modem->hangup() =~ /OK/ ) {
+	print "ok 9\n";
+} else {
+	print "not ok 9\n";
+}
 
