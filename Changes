@@ -2,7 +2,8 @@ Revision history for Perl extension Device::Modem.
 
 1.25
 1.26
-1.27  Sun May 18 17:19:23 CET 2003
+1.27
+1.28  Sun May 18 17:19:23 CET 2003
 	- dial() now works as expected, returning the `CONNECT' or `BUSY'
           or whatever message without hanging for minutes;
 	- answer() routine now is definitely more reliable than before:
@@ -14,6 +15,8 @@ Revision history for Perl extension Device::Modem.
         - Added a FAQ document in new "docs/" folder;
 	- new(): added possibility to pass a custom log object as `log'
           property;
+	- fixed log levels for File and Syslog plugins. Implemented
+	  correct log level masking also for Syslog.
 
 1.23  Wed Dec  4 00:34:52 CET 2002
         - little documentation adjustments in main Modem.pm class;
