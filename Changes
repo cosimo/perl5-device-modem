@@ -1,9 +1,11 @@
 Revision history for Perl extension Device::Modem.
 
+1.39
 1.38
 1.37  Wed Aug 18 09:21:50 CET 2004
     - parse_answer() now in scalar context (string) returns *all* modem
       answer instead of removing the last string (OK/ERROR/...)
+    - documented new example scripts: caller-id.pl and xmodem.pl
 
 1.36
 1.35

@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.38 2004-08-18 07:21:31 cosimo Exp $
+# $Id: Modem.pm,v 1.39 2004-08-18 07:33:32 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.38 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.39 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -806,6 +806,12 @@ that you can take as (yea) examples:
 
 Tests if modem is alive
 
+=item `examples/caller-id.pl'
+
+Waits for an incoming call and displays date, time and phone number of the caller.
+Normally this is available everywhere, but you should check your local phone line
+and settings.
+
 =item `examples/dial.pl'
 
 Dials a phone number and display result of call
@@ -813,6 +819,15 @@ Dials a phone number and display result of call
 =item `examples/shell.pl'
 
 (Very) poor man's minicom/hyperterminal utility
+
+=item `examples/xmodem.pl'
+
+First attempt at a test script to receive a file via xmodem protocol.
+Please be warned that this thing does not have a chance to work. It's
+only a (very low priority) work in progress...
+
+If you want to help out, be welcome!
+
 
 =back
 
