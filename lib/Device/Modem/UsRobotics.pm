@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: UsRobotics.pm,v 1.1 2004-11-17 06:44:30 cosimo Exp $
+# $Id: UsRobotics.pm,v 1.2 2004-11-17 06:54:01 cosimo Exp $
 
 package Device::Modem::UsRobotics;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.1 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.2 $ =~ /(\d)\.(\d+)/;
 
 use strict;
 use Device::Modem;
@@ -41,6 +41,22 @@ sub mcc_reset {
     my $self = $_[0];
     $self->atsend('AT+MCC'.Device::Modem::CR);
     $self->parse_answer();
+}
+
+sub msg_status {
+    my($self, $index) = @_;
+
+    $self->atsend('AT+MSR=0'.Device::Modem::CR);
+    my($ok, @data) = $self->parse_answer();
+    if( index($ok,'OK') >= 0 ) {
+        $self->log->write('info', 'MSR: '.join('/ ', @data));
+        return wantarray ? @data : join("\n", @data);
+    }
+    else
+    {
+        $self->log->write('warning', 'MSR: Error in querying status');
+        return undef;
+    }
 }
 
 1;
