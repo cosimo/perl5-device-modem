@@ -1,4 +1,4 @@
-# $Id: test.pl,v 1.10 2002-06-05 10:47:50 cosimo Exp $
+# $Id: test.pl,v 1.11 2002-06-17 19:34:29 Cosimo Exp $
 #
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
@@ -8,7 +8,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..6\n"; }
+BEGIN { $| = 1; print "1..15\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use lib '.';
 use Modem;
@@ -194,6 +194,25 @@ if( $modem->is_active() ) {
 	$not_connected_guess += 10;
 }
 
+
+# --- 11 ---
+print 'testing S registers read/write...', "\n";
+
+my $reg = 1;
+my $v1 = $modem->S_register($reg);
+my $v2 = $modem->S_register($reg, 72);
+my $v3 = $modem->S_register($reg);
+my $v4 = $modem->S_register($reg, $v1);
+my $v5 = $modem->S_register($reg);
+
+if( $v1 eq $v5 && $v1 == $v5 &&
+    $v2 == 72  && $v3 == 72  &&
+    $v4 eq $v1 && $v4 == $v1 ) {
+	print "ok 11\n";
+} else {
+	$not_connected_guess++;
+	print "not ok 11\n";
+}
 
 if( $not_connected_guess >= 4 ) {
 
