@@ -150,7 +150,12 @@ Probably this is the better compromise...
 
 Oh, yes!
 Please feel free to contact L<cosimo@cpan.org> to decide details about this... :-)
+
+=for html
 Or, if you have nothing wrong with that, go to my <A HREF="http://www.amazon.com">Amazon wishlist</A>.
+
+=for pod
+Or, if you have nothing wrong with that, go to my amazon wishlist.
 
 =head2 I think you are a ?#!x$*z!#(!* and your software sucks
 
