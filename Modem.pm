@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.12 2002-04-29 16:55:30 cosimo Exp $
+# $Id: Modem.pm,v 1.13 2002-05-22 20:46:46 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.12 $ =~ /(\d)\.(\d+)/; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.13 $ =~ /(\d)\.(\d+)/; 
 
 BEGIN {
 	if( $^O =~ /Win/i ) {
@@ -224,6 +224,7 @@ sub send_init_string {
 	my($self, $cInit) = @_;
 	$self->attention();
 	$self->atsend( 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4' . CR );
+	#$self->atsend( 'AT Z' . CR );
 	$self->answer();
 }
 
@@ -297,7 +298,7 @@ sub connect {
 # $^O is stored into object
 sub ostype {
 	my $self = shift;
-	$self->{'ostype'} =~ /Win/ and return 'windoze';
+	$self->{'ostype'} =~ /Win/o and return 'windoze';
 	$self->{'ostype'};
 }
 
@@ -342,11 +343,28 @@ sub atsend {
 # is encountered or a timeout happens.
 sub answer {
 	my $me = shift;
-	my $buff;
-	my $msec = 100; 
+	my($expect, $timeout) = @_;
 
-	my($howmany, $what) = $me->port->read($msec);
-	$buff = $what;
+	$timeout ||= 200;                           # default wait is 200 milliseconds
+
+	# Single cycle wait time
+	my $time_slice = 100;                       # milliseconds
+	my $cycles = $timeout / $time_slice;
+
+	# If we expect something, we must first match against serial input
+	my $matched = not $expect;
+
+	# Main read cycle
+	my $cycle = 0;
+	my $buff;
+	do {
+		my($howmany, $what) = $me->port->read( $time_slice );
+		$buff .= $what if defined $what;
+
+		# Check if buffer matches "expect string"
+		$expect and $matched = $buff =~ /$expect/;
+
+	} while( ++$cycle < $cycles || not $matched );
 
 	$me->log->write('info', 'answer: read ['.$buff.']' );
 
@@ -366,30 +384,18 @@ sub answer {
 # AT+CGMI)
 sub parse_answer {
 	my $me = shift;
-	my $buff;
-	my $msec = 100; 
 
-	my($howmany, $what) = $me->port->read($msec);
-	$buff = $what;
-
-	$me->log->write('info', 'parse_answer: read ['.$buff.']' );
-
-	# Flush receive and trasmit buffers
-	$me->port->purge_all;
-
-	# Trim result of beginning and ending CR+LF (XXX)
-	$buff =~ s/^[\r\n]+//;
-	$buff =~ s/[\r\n]+$//;
+	my $buff = $me->answer( @_ );
 
 	# Separate response code from information
 	my @response = split CR, $buff;
 
-	# Extract responde code
-	my $code = pop @response;
-
 	# Remove all empty lines before/after response
 	shift @response while( $response[0] eq CR() );
 	pop   @response while( $response[-1] eq CR() );
+
+	# Extract responde code
+	my $code = pop @response;
 
 	return
 		wantarray
@@ -504,13 +510,9 @@ of brand/model-specific commands
 
 =item *
 
-Time::HiRes
+Test `parse_answer()' method
 
-Check if Time::HiRes module is installed and use it
-to wait milliseconds instead of whole seconds
-
-
-=item *
+item *
 
 Many more to come!
 
