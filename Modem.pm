@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.28 2003-05-20 05:46:40 cosimo Exp $
+# $Id: Modem.pm,v 1.29 2003-10-15 23:42:38 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.28 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.29 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -552,7 +552,7 @@ sub atsend {
 
 # answer() takes strings from the device until a pattern
 # is encountered or a timeout happens.
-sub answer {
+sub _answer {
 	my $me = shift;
 	my($expect, $timeout) = @_;
 
@@ -615,6 +615,15 @@ sub answer {
 
 	# Flush receive and trasmit buffers
 	$me->port->purge_all;
+
+	return $answer;
+
+} 
+
+sub answer {
+
+	my $self = shift();
+	my $answer = $self->_answer(@_);
 
 	# Trim result of beginning and ending CR+LF (XXX)
 	if( defined $answer ) {
