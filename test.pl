@@ -19,6 +19,9 @@ print "ok 1\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
+print "\n\n*** REMEMBER to run these tests as `root' (where required)!\n\n";
+sleep 2;
+
 my %config;
 if( open CACHED_CONFIG, '< .config' ) {
 	while( <CACHED_CONFIG> ) {
