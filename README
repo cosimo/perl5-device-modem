@@ -70,6 +70,18 @@ DESCRIPTION
     abstraction. It is meant to be inherited by sub classes (as
     Device::Gsm), which are based on serial connections.
 
+    In the `examples' directory, there are some scripts that should work
+    without big problems, that you can take as (yea) examples:
+
+    `examples/active.pl'
+        Tests if modem is alive
+
+    `examples/dial.pl'
+        Dials a phone number and display result of call
+
+    `examples/shell.pl'
+        (Very) poor man's minicom/hyperterminal utility
+
   REQUIRES
 
     Device::SerialPort (Win32::SerialPort for Windows machines)
@@ -108,5 +120,5 @@ COPYRIGHT
     modify it under the same terms as Perl itself.
 
 SEE ALSO
-    Device::SerialPort, Win32::SerialPort, perl
+    Device::SerialPort, Device::Gsm, Win32::SerialPort, perl
 

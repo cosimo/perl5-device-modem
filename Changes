@@ -43,3 +43,9 @@ Revision history for Perl extension Device::Modem.
 	- dial() now dials also address book numbers (only if supplied number
 	  is composed of 1 digit: the address book position, from 0 to 9).
         - status() method added, which looks up CTS, DSR, RLSD and RING signals;
+
+1.17
+1.18  Tue Sep  3 21:57:11 CEST 2002
+	- removed some warnings and error in regexp pattern, slight changes in
+          documentation
+

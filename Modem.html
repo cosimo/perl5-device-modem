@@ -104,6 +104,21 @@
 <H1><A NAME="description">DESCRIPTION</A></H1>
 <P>Device::Modem class implements basic AT (Hayes) compliant device abstraction. It is meant
 to be inherited by sub classes (as Device::Gsm), which are based on serial connections.</P>
+<P>In the `examples' directory, there are some scripts that should work without big problems,
+that you can take as (yea) examples:</P>
+<DL>
+<DT><STRONG><A NAME="item_%60examples%2Factive%2Epl%27">`examples/active.pl'</A></STRONG><BR>
+<DD>
+Tests if modem is alive
+<P></P>
+<DT><STRONG><A NAME="item_%60examples%2Fdial%2Epl%27">`examples/dial.pl'</A></STRONG><BR>
+<DD>
+Dials a phone number and display result of call
+<P></P>
+<DT><STRONG><A NAME="item_%60examples%2Fshell%2Epl%27">`examples/shell.pl'</A></STRONG><BR>
+<DD>
+(Very) poor man's minicom/hyperterminal utility
+<P></P></DL>
 <P>
 <H2><A NAME="requires">REQUIRES</A></H2>
 <DL>
@@ -152,6 +167,7 @@ modify it under the same terms as Perl itself.</P>
 <HR>
 <H1><A NAME="see also">SEE ALSO</A></H1>
 <P>Device::SerialPort,
+Device::Gsm,
 Win32::SerialPort,
 perl</P>
 

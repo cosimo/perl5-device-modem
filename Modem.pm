@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.17 2002-09-02 21:21:59 cosimo Exp $
+# $Id: Modem.pm,v 1.18 2002-09-03 20:03:27 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.17 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.18 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -691,6 +691,26 @@ Device::Modem - Perl extension to talk to modem devices connected via serial por
 Device::Modem class implements basic AT (Hayes) compliant device abstraction. It is meant
 to be inherited by sub classes (as Device::Gsm), which are based on serial connections.
 
+In the `examples' directory, there are some scripts that should work without big problems,
+that you can take as (yea) examples:
+
+=over 4
+
+=item `examples/active.pl'
+
+Tests if modem is alive
+
+=item `examples/dial.pl'
+
+Dials a phone number and display result of call
+
+=item `examples/shell.pl'
+
+(Very) poor man's minicom/hyperterminal utility
+
+=back
+
+
 =head2 REQUIRES
 
 =over 4
@@ -755,6 +775,7 @@ modify it under the same terms as Perl itself.
 =head1 SEE ALSO
 
 Device::SerialPort,
+Device::Gsm,
 Win32::SerialPort,
 perl
 
