@@ -9,6 +9,7 @@ lib/Device/Modem/Log/Syslog.pm
 lib/Device/Modem/Protocol/Xmodem.pm
 examples/active.pl
 examples/shell.pl
+examples/caller-id.pl
 examples/dial.pl
 examples/active.pl
 examples/xmodem.pl
