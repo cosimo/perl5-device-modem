@@ -57,12 +57,11 @@ Revision history for Perl extension Device::Modem.
 	  big serial messages (removed this from TODO list).
 	- removed warnings on undefined answer strings.
 
-
-1.23  Tue Dec  3 23:16:38 CET 2002
-	- little documentation adjustments
-	- log classes revisited, especially Device::Modem::Log::File
-	  (also thanks to Joerg Neuberger), removing `use warnings' that caused
-	  troubles with (only, it seems) perl 5.005_xx. Now `File' class
-	  opens the log file once and writes on already opened file handle.
-
+1.23  Wed Dec  4 00:34:52 CET 2002
+        - little documentation adjustments in main Modem.pm class;
+        - removed use of `warnings.pm' 
+        - now File log class opens the log file once and writes
+          on already opened file handle, until final close().
+        - Thanks to Joerg Neuberger for spotting out a problem with
+          older perls (5.005_xx) and `use warnings'
 
