@@ -61,5 +61,8 @@ Revision history for Perl extension Device::Modem.
 1.23  Tue Dec  3 23:16:38 CET 2002
 	- little documentation adjustments
 	- log classes revisited, especially Device::Modem::Log::File
-	  (also thanks to Joerg Neuberger)
+	  (also thanks to Joerg Neuberger), removing `use warnings' that caused
+	  troubles with (only, it seems) perl 5.005_xx. Now `File' class
+	  opens the log file once and writes on already opened file handle.
+
 
