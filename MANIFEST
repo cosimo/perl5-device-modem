@@ -8,4 +8,6 @@ test.pl
 lib/Device/Modem/Log/File.pm
 lib/Device/Modem/Log/Syslog.pm
 examples/shell.pl
+examples/dial.pl
+examples/active.pl
 
