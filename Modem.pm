@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.20 2002-09-11 22:37:29 cosimo Exp $
+# $Id: Modem.pm,v 1.21 2002-09-25 22:13:57 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.20 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.21 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -552,7 +552,7 @@ sub answer {
 	$me->log->write('info', 'answer: expecting ['.($expect||'').'] or timeout ['.$timeout.']' );
 
 	# Main read cycle
-	my $idle_cycles = 1;
+	my $idle_cycles = 0;
 	my $answer;
 	do {
 		my($howmany, $what) = $me->port->read(100);
@@ -566,13 +566,15 @@ sub answer {
 		}
 
 		# Check if buffer matches "expect string"
-		$done = $expect
-			? $answer =~ /$expect/
-			: $idle_cycles == $max_idle_cycles;
+		#$done = $expect
+		#	? $answer =~ /$expect/
+		#	: $idle_cycles == $max_idle_cycles;
+		$done++ if $expect && $answer =~ /$expect/;
+		$done++ if $idle_cycles == $max_idle_cycles;
 
 		$me->log->write('debug', 'answer: idle_c='.$idle_cycles.'/'.$max_idle_cycles.' read_till_now='.($answer||'').' matched='.$done);
 
-		select undef, undef, undef, $time_slice unless $done;
+		select(undef, undef, undef, $time_slice) unless $done;
 
 	} while( not $done );
 
