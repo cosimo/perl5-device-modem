@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# $Id: shell.pl,v 1.3 2002-03-25 06:52:58 cosimo Exp $
+# $Id: shell.pl,v 1.4 2002-04-03 20:02:44 cosimo Exp $
 #
 
 use strict;
@@ -17,7 +17,7 @@ chomp $port;
 
 $port ||= '/dev/ttyS1';
 
-my $modem = new Device::Modem ( serial => $port, baud => 9600 );
+my $modem = new Device::Modem ( port => $port, baud => 9600 );
 my $stop;
 
 die "Could not connect to $port!\n" unless $modem->connect();
