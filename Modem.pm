@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.23 2002-12-03 22:16:12 cosimo Exp $
+# $Id: Modem.pm,v 1.24 2002-12-03 23:37:04 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.23 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.24 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -526,7 +526,7 @@ sub atsend {
 	$cnt = $me->port->write($msg);
 	$me->port->write_drain() unless $me->ostype eq 'windoze';
 
-	$me->log->write('info', 'atsend: wrote '.$cnt.'/'.length($msg).' chars');
+	$me->log->write('verbose', 'atsend: wrote '.$cnt.'/'.length($msg).' chars');
 
 	# If wrote all chars of `msg', we are successful
 	return $cnt == length $msg;
@@ -548,7 +548,7 @@ sub answer {
 
 	$time_slice /= 1000;
 
-	$me->log->write('info', 'answer: expecting ['.($expect||'').'] or timeout ['.$timeout.']' );
+	$me->log->write('verbose', 'answer: expecting ['.($expect||'').'] or timeout ['.$timeout.']' );
 
 	# Main read cycle
 	my $idle_cycles = 0;
@@ -632,9 +632,9 @@ Device::Modem - Perl extension to talk to modem devices connected via serial por
 
 =head1 WARNING
 
-   This is C<ALPHA> software, still needs extensive testing and
+   This is B<BETA> software, still needs extensive testing and
    support for generic AT commands, so use it at your own risk,
-   and without C<ANY> warranty! Have fun.
+   and without B<ANY> warranty! Have fun.
 
 =head1 SYNOPSIS
 
