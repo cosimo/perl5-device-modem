@@ -49,3 +49,8 @@ Revision history for Perl extension Device::Modem.
 	- removed some warnings and error in regexp pattern, slight changes in
           documentation
 
+1.19  Thu Sep 12 00:19:11 CEST 2002
+	- improved command/response cycle with proper handling of timeout
+          and idle/data cycles. Now it is more reliable also with fairly
+	  big serial messages (removed this from TODO list).
+
