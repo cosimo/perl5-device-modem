@@ -1,6 +1,6 @@
 Revision history for Perl extension Device::Modem.
 
-1.25  Sat May 17 20:49:23 CET 2003
+1.25  Sun May 18 16:49:23 CET 2003
 	- dial() now works as expected, returning the `CONNECT' or `BUSY'
           or whatever message without hanging for minutes;
 	- answer() routine now is definitely more reliable than before:
