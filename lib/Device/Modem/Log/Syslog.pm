@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Syslog.pm,v 1.6 2002-12-03 21:27:52 cosimo Exp $
+# $Id: Syslog.pm,v 1.7 2003-05-18 14:57:48 cosimo Exp $
 
 package Device::Modem::Log::Syslog;
-$VERSION = substr q$Revision: 1.6 $, 10;
+$VERSION = substr q$Revision: 1.7 $, 10;
 
 use strict;
 use Sys::Syslog ();
@@ -25,9 +25,29 @@ sub new {
 	bless \$loglevel, 'Device::Modem::Log::Syslog';
 }
 
+{
+
+# Define log levels like syslog service
+my %levels = ( debug => 1, verbose => 10, info => 20, 'warn' => 30, error => 40, crit => 50 );
+
+sub loglevel {
+	my($self, $newlevel) = @_;
+
+	if( defined $newlevel ) {
+		if( ! exists $levels{$newlevel} ) {
+			$newlevel = 'warn';
+		}
+		$$self = $newlevel;
+	} else {
+		return $$self;
+	}
+}
+
 sub write($$) {
 	my($self, $level, @msg) = @_;
 	Sys::Syslog::syslog( $level, @msg );
+}
+
 }
 
 sub close {
