@@ -52,7 +52,7 @@ if( $config{'tty'} ) {
 # BEGIN OF TESTS
 # -----------------------------------------------------
 
-my $modem = new Device::Modem( serial => $port );
+my $modem = new Device::Modem( port => $port );
 
 if( $modem->connect ) {
 	print "ok 2\n";
@@ -78,7 +78,7 @@ if( $modem->echo(1) ) {
 	$lOk &&= $modem->echo(0);
 
 	$modem->atsend('AT@@@'.Device::Modem::CR);
-	my $ans = $modem->answer();
+	$ans = $modem->answer();
 	print "\t", 'answer with echo off = ', $ans, "\n";
 
 	$lOk &&= ( $ans =~ /ERROR/ );
