@@ -9,16 +9,17 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: UsRobotics.pm,v 1.2 2004-11-17 06:54:01 cosimo Exp $
+# $Id: UsRobotics.pm,v 1.3 2004-11-22 23:07:03 cosimo Exp $
 
 package Device::Modem::UsRobotics;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.2 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.3 $ =~ /(\d)\.(\d+)/;
 
 use strict;
 use Device::Modem;
 @Device::Modem::UsRobotics::ISA = 'Device::Modem';
 
 sub mcc_get {
+
     my $self = $_[0];
     $self->atsend('AT+MCC?'.Device::Modem::CR);
     my @time;
@@ -37,10 +38,67 @@ sub mcc_get {
 
 }
 
+#
+# Takes days,hrs,mins values and obtains a real time value
+#
+sub mcc_merge {
+    my($self, $d, $h, $m) = @_;
+    $_ += 0 for $d, $h, $m ;
+
+    if( $d == $h && $h == $m && $m == 255 )
+    {
+        $self->log->write('warning', 'invalid time 255,255,255');
+        return(time());
+    }
+
+    my $mcc_last = $self->mcc_last_saved();
+    $mcc_last += 86400 * $d + 3600 * $h + 60 * $m;
+
+    $self->log->write('info', "$d days, $h hours, $m mins is real time ".localtime($mcc_last));
+    return($mcc_last);
+}
+
+sub mcc_last_saved {
+    my $self = $_[0];
+    my $dir = $self->_createSettingsDir();
+    my $mcc_basetime = undef;
+
+    if( ! -d $dir )
+    {
+        return undef;
+    }
+    elsif( open SETTINGS, "$dir/mcc_timer" )
+    {
+        chomp($mcc_basetime = <SETTINGS>);
+    }
+
+    $self->log->write('info', 'last mcc timer saved at '.localtime($mcc_basetime));
+    return($mcc_basetime);
+}
+
 sub mcc_reset {
     my $self = $_[0];
     $self->atsend('AT+MCC'.Device::Modem::CR);
-    $self->parse_answer();
+    my($ok, $ans) = $self->parse_answer();
+    $self->log->write('info', 'internal timer reset to 00 days, 00 hrs, 00 mins');
+    if( index($ok, 'OK') >= 0 )
+    {
+        # Create settings dir
+        my $dir = $self->_createSettingsDir();
+        if( -d $dir )
+        {
+            if( open SETTINGS, "> $dir/mcc_timer" )
+            {
+                print SETTINGS time(), "\n";
+                $ok = close SETTINGS;
+            }
+        }
+        else
+        {
+            $self->log->write('warning', 'Failed writing mcc timer settings in ['.$dir.']');
+        }
+
+    }
 }
 
 sub msg_status {
@@ -57,6 +115,77 @@ sub msg_status {
         $self->log->write('warning', 'MSR: Error in querying status');
         return undef;
     }
+}
+
+sub clear_memory
+{
+    my($self, $memtype) = @_;
+    $memtype = 2 unless defined $memtype;
+    my $cmd  = '';
+
+    if( $memtype == 0 || $memtype eq 'all' )
+    {
+        $cmd = '+MEA';
+    }
+    elsif( $memtype == 1 || $memtype eq 'user' )
+    {
+        $cmd = '+MEU';
+    }
+    elsif( $memtype == 2 || $memtype eq 'messages' )
+    {
+        $cmd = '+MEM';
+    }
+
+    $cmd = 'AT+' . $cmd . Device::Modem::CR;
+    $self->atsend($cmd);
+    $self->wait(500);
+    $self->log->write('info', 'cleared memory type '.$memtype);
+    return(1);
+}
+
+sub fax_id_string
+{
+    my $self   = shift;
+    my $result = '';
+
+    if( @_ )
+    {
+        $self->atsend( sprintf('AT+MFI="%s"',$_[0]) . Device::Modem::CR );
+        $self->wait(250);
+        my($ok, $ans) = $self->parse_answer(); 
+        $self->log->write('info', 'New Fax ID string set to ['.$_[0].']');
+        $result = $ok;
+    }
+    else
+    {
+        # Retrieve current fax id string
+        $self->atsend('AT+MFI?' . Device::Modem::CR);
+        $self->wait(250);
+        my($ok, $ans) = $self->parse_answer();
+        $self->log->write('info', 'Fax ID string is ['.$ans.']');
+        # Remove double quotes chars if present
+        $ans = substr($ans, 1, -1) if $ans =~ /^".*"$/;
+        $result = $ans;
+    }
+
+    $self->log->write('debug', 'fax_id_string answer is ['.$result.']');
+    return($result);
+}
+
+sub _createSettingsDir {
+    my $self = $_[0];
+    my $ok = 1;
+    require File::Path;
+    my $dir = $self->_settingsDir();
+    if( ! -d $dir )
+    {
+        $ok = File::Path::mkpath( $dir, 0, 0700 );
+    }
+    return($ok ? $dir : undef);
+}
+
+sub _settingsDir {
+    "$ENV{HOME}/.usrmodem"
 }
 
 1;
@@ -84,588 +213,29 @@ Device::Modem::UsRobotics - USR modems extensions to control self-mode
 C<Device::Modem> class implements basic B<AT (Hayes) compliant> device abstraction.
 It can be inherited by sub classes (as C<Device::Gsm>), which are based on serial connections.
 
-=head2 Things C<Device::Modem> can do
-
-=over 4
-
-=item *
-
-connect to a modem on your serial port
-
-=item *
-
-test if the modem is alive and working
-
-=item *
-
-dial a number and connect to a remote modem
-
-=item *
-
-work with registers and settings of the modem
-
-=item *
-
-issue standard or arbitrary C<AT> commands, getting results from modem
-
-=back
-
-=head2 Things C<Device::Modem> can't do yet
-
-=over 4
-
-=item *
-
-Transfer a file to a remote modem
-
-=item *
-
-Control a terminal-like (or a PPP) connection. This should really not
-be very hard to do anyway.
-
-=item *
-
-Many others...
-
-=back
-
-=head2 Things it will never be able to do
-
-=over 4
-
-=item *
-
-Coffee :-)
-
-=back
-
-
-=head2 Examples
-
-In the `examples' directory, there are some scripts that should work without big problems,
-that you can take as (yea) examples:
-
-=over 4
-
-=item `examples/active.pl'
-
-Tests if modem is alive
-
-=item `examples/caller-id.pl'
-
-Waits for an incoming call and displays date, time and phone number of the caller.
-Normally this is available everywhere, but you should check your local phone line
-and settings.
-
-=item `examples/dial.pl'
-
-Dials a phone number and display result of call
-
-=item `examples/shell.pl'
-
-(Very) poor man's minicom/hyperterminal utility
-
-=item `examples/xmodem.pl'
-
-First attempt at a test script to receive a file via xmodem protocol.
-Please be warned that this thing does not have a chance to work. It's
-only a (very low priority) work in progress...
-
-If you want to help out, be welcome!
-
-
-=back
-
 =head1 METHODS
 
-=head2 answer()
+=head2 clear_memory()
 
-One of the most used methods, waits for an answer from the device. It waits until
-$timeout (seconds) is reached (but don't rely on this time to be very correct) or until an
-expected string is encountered. Example:
+Used to permanently clear the memory space of the modem. There are separate memory
+spaces, one for voice/fax messages and one for user settings. Examples:
 
-	$answer = $modem->answer( [$expect [, $timeout]] )
+	$modem->clear_memory('user');     # or $modem->clear_memory(1)
+    $modem->clear_memory('messages'); # or $modem->clear_memory(2)
 
-Returns C<$answer> that is the string received from modem stripped of all
-B<Carriage Return> and B<Line Feed> chars B<only> at the beginning and at the end of the
-string. No in-between B<CR+LF> are stripped.
+To clear both, you can use:
 
-Note that if you need the raw answer from the modem, you can use the _answer() (note
-that underscore char before answer) method, which does not strip anything from the response,
-so you get the real modem answer string.
+    $modem->clear_memory('all');      # or $modem->clear_memory(0);
 
 Parameters:
 
 =over 4
 
-=item *
-
-C<$expect> - Can be a regexp compiled with C<qr> or a simple substring. Input coming from the
-modem is matched against this parameter. If input matches, result is returned.
-
-=item *
-
-C<$timeout> - Expressed in seconds. After that time, answer returns result also if nothing
-has been received. Example: C<10>. Default: C<0.2>
-
-=back
-
-
-
-=head2 atsend()
-
-Sends a raw C<AT> command to the device connected. Note that this method is most used
-internally, but can be also used to send your own custom commands. Example:
-
-	$ok = $modem->atsend( $msg )
-
-The only parameter is C<$msg>, that is the raw AT command to be sent to
-modem expressed as string. You must include the C<AT> prefix and final
-B<Carriage Return> and/or B<Line Feed> manually. There is the special constant
-C<CR> that can be used to include such a char sequence into the at command.
-
-Returns C<$ok> flag that is true if all characters are sent successfully, false
-otherwise.
-
-Example:
-
-	# Enable verbose messages
-	$modem->atsend( 'AT V1' . Device::Modem::CR );
-
-	# The same as:
-	$modem->verbose(1);
-
-
-=head2 attention()
-
-This command sends an B<attention> sequence to modem. This allows modem
-to pass in B<command state> and accept B<AT> commands. Example:
-
-	$ok = $modem->attention()
-
-=head2 connect()
-
-Connects C<Device::Modem> object to the specified serial port.
-There are options (the same options that C<Device::SerialPort> has) to control
-the parameters associated to serial link. Example:
-
-	$ok = $modem->connect( [%options] )
-
-List of allowed options follows:
-
-=over 4
-
-=item C<baudrate>
-
-Controls the speed of serial communications. The default is B<19200> baud, that should
-be supported by all modern modems. However, here you can supply a custom value.
-Common speed values: 300, 1200, 2400, 4800, 9600, 19200, 38400, 57600,
-115200.
-This parameter is handled directly by C<Device::SerialPort> object.
-
-=item C<databits>
-
-This tells how many bits your data word is composed of.
-Default (and most common setting) is C<8>.
-This parameter is handled directly by C<Device::SerialPort> object.
-
-=item C<init_string>
-
-Custom initialization string can be supplied instead of the built-in one, that is the
-following: C<H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4>, that is taken shamelessly from
-C<minicom> utility, I think.
-
-=item C<parity>
-
-Controls how parity bit is generated and checked.
-Can be B<even>, B<odd> or B<none>. Default is B<none>.
-This parameter is handled directly by C<Device::SerialPort> object.
-
-=item C<stopbits>
-
-Tells how many bits are used to identify the end of a data word.
-Default (and most common usage) is C<1>.
-This parameter is handled directly by C<Device::SerialPort> object.
-
-=back
-
-
-
-=head2 dial()
-
-Takes the modem off hook, dials the specified number and returns modem answer.
-Usage:
-
-	# Simple usage (timeout is optional)
-	$ok = $modem->dial( $number [,$timeout] )
-
-	# List context: allows to get at exact modem answer
-	# like `CONNECT 19200/...', `BUSY', `NO CARRIER', ...
-	($ok, $answer) = $modem->dial( $number [,$timeout] )
-
-If called in B<scalar context>, returns only success of connection. If modem answer
-contains C<CONNECT> string, C<dial()> returns successful state, else false value
-is returned.
-
-If called in B<list context>, returns the same C<$ok> flag, but also the exact
-modem answer to the dial operation in the C<$answer> scalar. C<$answer> typically
-can contain strings like C<CONNECT 19200> or C<NO CARRIER>, C<BUSY>, ... all standard
-modem answers to a dial command.
-
-Parameters are:
-
-=over 4
-
-=item *
-
-C<$number> - this is the phone number to dial. If C<$number> is only 1 digit, it is interpreted
-as: B<dial number in my address book position C<$number>>. So if your code is:
-
-	$modem->dial( 2, 10 );
-
-This means: dial number in the modem internal address book (see C<store_number> for a way to
-read/write address book) in position number B<2> and wait for a timeout of B<10> seconds.
-
-=item *
-
-C<$timeout> - timeout expressed in seconds to wait for the remote device to answer.
-Please do not expect an B<exact> wait for the number of seconds you specified. I'm still
-studying how to do that exactly.
-
-=back
-
-
-=head2 disconnect()
-
-Disconnects C<Device::Modem> object from serial port. This method calls underlying
-C<disconnect()> of C<Device::SerialPort> object.
-Example:
-
-	$modem->disconnect();
-
-=head2 echo()
-
-Enables or disables local echo of commands. This is managed automatically by C<Device::Modem>
-object. Normally you should not need to worry about this. Usage:
-
-	$ok = $modem->echo( $enable )
-
-=head2 hangup()
-
-Does what it is supposed to do. Hang up the phone thus terminating any active call.
-Usage:
-
-	$ok = $modem->hangup();
-
-=head2 is_active()
-
-Can be used to check if there is a modem attached to your computer.
-If modem is alive and responding (on serial link, not to a remote call),
-C<is_active()> returns true (1), otherwise returns false (0).
-
-Test of modem activity is done through DSR (Data Set Ready) signal. If
-this signal is in off state, modem is probably turned off, or not working.
-From my tests I've found that DSR stays in "on" state after more or less
-one second I turn off my modem, so know you know that.
-
-Example:
-
-	if( $modem->is_active() ) {
-		# Ok!
-	} else {
-		# Modem turned off?
-	}
-
-=head2 log()
-
-Simple accessor to log object instanced at object creation time.
-Used internally. If you want to know the gory details, see C<Device::Modem::Log::*> objects.
-You can also see the B<examples> for how to log something without knowing
-all the gory details.
-
-Hint:
-	$modem->log->write('warning', 'ok, my log message here');
-
-=head2 new()
-
-C<Device::Modem> constructor. This takes several options. A basic example:
-
-	my $modem = Device::Modem->new( port => '/dev/ttyS0' );
-
-if under Linux or some kind of unix machine, or
-
-	my $modem = Device::Modem->new( port => 'COM1' );
-
-if you are using a Win32 machine.
-
-This builds the C<Device::Modem> object with all the default parameters.
-This should be fairly usable if you want to connect to a real modem.
-Note that I'm testing it with a B<3Com US Robotics 56K Message> modem
-at B<19200> baud and works ok.
-
-List of allowed options:
-
-=over 4
-
-=item *
-
-C<port> - serial port to connect to. On Unix, can be also a convenient link as
-F</dev/modem> (the default value). For Win32, C<COM1,2,3,4> can be used.
-
-=item *
-
-C<log> - this specifies the method and eventually the filename for logging.
-Logging process with C<Device::Modem> is controlled by B<log plugins>, stored under
-F<Device/Modem/Log/> folder. At present, there are two main plugins: C<Syslog> and C<File>.
-C<Syslog> does not work with Win32 machines.
-When using C<File> plug-in, all log information will be written to a default filename
-if you don't specify one yourself. The default is F<%WINBOOTDIR%\temp\modem.log> on
-Win32 and F</var/log/modem.log> on Unix.
-
-Also there is the possibility to pass a B<custom log object>, if this object
-provides the following C<write()> call:
-
-	$log_object->write( $loglevel, $logmessage )
-
-You can simply pass this object (already instanced) as the C<log> property.
-
-Examples:
-
-	# For Win32, default is to log in "%WINBOOTDIR%/temp/modem.log" file
-	my $modem = Device::Modem->new( port => 'COM1' );
-
-	# Unix, custom logfile
-	my $modem = Device::Modem->new( port => '/dev/ttyS0', log => 'file,/home/neo/matrix.log' )
-
-	# With custom log object
-	my $modem = Device::modem->new( port => '/dev/ttyS0', log => My::LogObj->new() );
-
-=item *
-
-C<loglevel> - default logging level. One of (order of decrescent verbosity): C<debug>,
-C<verbose>, C<notice>, C<info>, C<warning>, C<err>, C<crit>, C<alert>, C<emerg>.
-
-=back
-
-
-=head2 offhook()
-
-Takes the modem "off hook", ready to dial. Normally you don't need to use this.
-Also C<dial()> goes automatically off hook before dialing.
-
-
-
-=head2 parse_answer()
-
-This method works like C<answer()>, it accepts the same parameters, but it
-does not return the raw modem answer. Instead, it returns the answer string
-stripped of all B<CR>/B<LF> characters at the beginning B<and> at the end.
-
-C<parse_answer()> is meant as an easy way of extracting result code
-(C<OK>, C<ERROR>, ...) and information strings that can be sent by modem
-in response to specific commands. Example:
-
-	> AT xSHOW_MODELx<CR>
-	US Robotics 56K Message
-	OK
-	>
-
-In this example, C<OK> is the result and C<US Robotics 56K Message> is the
-informational message.
-
-In fact, another difference with C<answer()> is in the return value(s).
-Here are some examples:
-
-	$modem->atsend( '?my_at_command?' );
-	$answer = $modem->parse_answer();
-
-where C<$answer> is the complete response string, or:
-
-	($result, @lines) = $modem->parse_answer();
-
-where C<$result> is the C<OK> or C<ERROR> final message and C<@lines> is
-the array of information messages (one or more lines). For the I<model> example,
-C<$result> would hold "C<OK>" and C<@lines> would consist of only 1 line with
-the string "C<US Robotics 56K Message>".
-
-
-
-=head2 port()
-
-Used internally. Accesses the C<Device::SerialPort> underlying object. If you need to
-experiment or do low-level serial calls, you may want to access this. Please report
-any usage of this kind, because probably (?) it is possible to include it in a higher
-level method.
-
-
-=head2 repeat()
-
-Repeats the last C<AT> command issued.
-Usage:
-
-	$ok = $modem->repeat()
-
-
-=head2 reset()
-
-Tries in any possible way to reset the modem to the starting state, hanging up all
-active calls, resending the initialization string and preparing to receive C<AT>
-commands.
-
-
-
-=head2 restore_factory_settings()
-
-Restores the modem default factory settings. There are normally two main "profiles",
-two different memories for all modem settings, so you can load profile 0 and profile 1,
-that can be different depending on your modem manufacturer.
-
-Usage:
-
-	$ok = $modem->restore_factory_settings( [$profile] )
-
-If no C<$profile> is supplied, C<0> is assumed as default value.
-
-Check on your modem hardware manual for the meaning of these B<profiles>.
-
-
-
-=head2 S_register()
-
-Gets or sets an B<S register> value. These are some internal modem registers that
-hold important information that controls all modem behaviour. If you don't know
-what you are doing, don't use this method. Usage:
-
-	$value = $modem->S_register( $reg_number [, $new_value] );
-
-C<$reg_number> ranges from 0 to 99 (sure?).
-If no C<$new_value> is supplied, return value is the current register value.
-If a C<$new_value> is supplied (you want to set the register value), return value
-is the new value or C<undef> if there was an error setting the new value.
-
-<!-- Qui &egrave; spiegata da cani -->
-
-Examples:
-
-	# Get value of S7 register
-	$modem->S_register(7);
-
-	# Set value of S0 register to 0
-	$modem->S_register(0, 0);
-
-
-=head2 send_init_string()
-
-Sends the initialization string to the connected modem. Usage:
-
-	$ok = $modem->send_init_string( [$init_string] );
-
-If you specified an C<init_string> as an option to C<new()> object constructor,
-that is taken by default to initialize the modem.
-Else you can specify C<$init_string> parameter to use your own custom intialization
-string. Be careful!
-
-=head2 status()
-
-Returns status of main modem signals as managed by C<Device::SerialPort> (or C<Win32::SerialPort>) objects.
-The signals reported are:
-
-=over 4
-
-=item CTS
-
-Clear to send
-
-=item DSR
-
-Data set ready
-
-=item RING
-
-Active if modem is ringing
-
-=item RLSD
-
-??? Released line ???
-
-=back
-
-Return value of C<status()> call is a hash, where each key is a signal name and
-each value is > 0 if signal is active, 0 otherwise.
-Usage:
-
-	...
-	my %sig = $modem->status();
-	for ('CTS','DSR','RING','RLSD') {
-		print "Signal $_ is ", ($sig{$_} > 0 ? 'on' : 'off'), "\n";
-	}
-
-=head2 store_number()
-
-Store telephone number in modem internal address book, to be dialed later (see C<dial()> method).
-Usage:
-
-	$ok = $modem->store_number( $position, $number )
-
-where C<$position> is the address book memory slot to store phone number (usually from 0 to 9),
-and C<$number> is the number to be stored in the slot.
-Return value is true if operation was successful, false otherwise.
-
-=head2 verbose()
-
-Enables or disables verbose messages. This is managed automatically by C<Device::Modem>
-object. Normally you should not need to worry about this. Usage:
-
-	$ok = $modem->verbose( $enable )
-
-=head2 wait()
-
-Waits (yea) for a given amount of time (in milliseconds). Usage:
-
-	$modem->wait( [$msecs] )
-
-Wait is implemented via C<select> system call.
-Don't know if this is really a problem on some platforms.
-
-
-
-
-
-=head1 REQUIRES
-
-=over 4
-
-=item Device::SerialPort (Win32::SerialPort for Win32 machines)
-
-=back
-
-=head1 EXPORT
-
-None
-
-
-
-=head1 TO-DO
-
-=over 4
-
-=item AutoScan
-
-An AT command script with all interesting commands is run
-when `autoscan' is invoked, creating a `profile' of the
-current device, with list of supported commands, and database
-of brand/model-specific commands
-
-=item Serial speed autodetect
-
-Now if you connect to a different baud rate than that of your modem,
-probably you will get no response at all. It would be nice if C<Device::Modem>
-could auto-detect the speed to correctly connect at your modem.
-
-=item File transfers
-
-It would be nice to implement C<[xyz]modem> like transfers between
-two C<Device::Modem> objects connected with two modems.
+=item C<$memtype>
+
+String or integer that selects the type of memory to be cleared,
+where C<0> is for C<all>, C<1> is for C<user> memory, C<2> is for C<messages>
+memory.
 
 =back
 
