@@ -1,12 +1,12 @@
 # Device::Modem
 #
 # Author: Cosimo Streppone <cosimo@cpan.org>
-# Date  : 2000/10/13
+# Date  : 2000/10/13 (ported to CPAN in 2002)
 #
-# $Id: Modem.pm,v 1.1.1.1 2002-03-20 21:13:49 cosimo Exp $
+# $Id: Modem.pm,v 1.2 2002-03-21 06:51:51 cosimo Exp $
 
 package Device::Modem;
-our $VERSION = substr q$Revision: 1.1.1.1 $, 10; 
+$VERSION = substr q$Revision: 1.2 $, 10; 
 
 use strict;
 use Device::SerialPort;
@@ -363,7 +363,7 @@ Device::Modem class implements basic AT device abstraction. It is meant
 to be inherited by sub classes (as Device::Gsm), which are
 based on serial connections.
 
-=head1 REQUIRES
+=head2 REQUIRES
 
 =over 4
 
@@ -371,9 +371,9 @@ based on serial connections.
 
 =back
 
-=head1 EXPORT
+=head2 EXPORT
 
-None by default.
+None
 
 =head1 AUTHOR
 
