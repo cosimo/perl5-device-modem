@@ -1,4 +1,4 @@
-# $Id: test.pl,v 1.16 2003-11-08 17:27:27 cosimo Exp $
+# $Id: test.pl,v 1.17 2003-11-08 17:56:56 cosimo Exp $
 #
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
@@ -89,14 +89,13 @@ NOTICE
 # serial port
 my $not_connected_guess;
 
-# test syslog logging
-# my $modem = new Device::Modem( port => $port, log => 'syslog' );
-
 # test text file logging
 my $port = $Device::Modem::port;
 my $baud = $Device::Modem::baudrate;
 
-my $modem = new Device::Modem( port => $port );
+# test syslog logging
+# my $modem = new Device::Modem( port => $port, log => 'syslog', loglevel => 'debug' );
+my $modem = new Device::Modem( port => $port, log => 'file,test.log', loglevel => 'info' );
 
 if( $modem->connect(baudrate => $baud) ) {
 	print "ok 2\n";
