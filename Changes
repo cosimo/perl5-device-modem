@@ -1,53 +1,23 @@
 Revision history for Perl extension Device::Modem.
 
-0.01  Tue Feb 26 22:15:22 CET 2002
-	- original version; created by h2xs 1.20 with options
-		-A -X -n Device::Modem -v 0.01
+1.25  Sat May 17 20:49:23 CET 2003
+	- dial() now works as expected, returning the `CONNECT' or `BUSY'
+          or whatever message without hanging for minutes;
+	- answer() routine now is definitely more reliable than before:
+          now everytime the buffer receives input from modem, it does
+          not restart counting the timeout. Removed also the possibility
+          of infinite loop if modem always receives garbage chars (like
+          on a RAW PPP link);
+        - Added full documentation for every method;
+        - Added a FAQ document in new "docs/" folder;
 
-1.04  Mon Mar 25 07:37:20 CET 2002
-    - cleaned up docs and some of source code
-
-1.05  Sat Mar 30 16:19:40 CET 2002
-	- added and documented dial() and repeat(), still
-      to be tested!
-
-1.07  Wed Apr  3 22:05:00 CEST 2002
-	- renamed `serial' parameter as `port', syncing with
-	  existent docs
-	- removed some warnings on parameters passing
-
-1.08  Wed Apr  3 23:31:58 CEST 2002
-	- fixed logging classes auto-load mechanism
-	- added parse_answer() function, to easily retrieve
-	  informational responses
-	- added TO-DO list to pod
-
-1.10  Wed Apr 10 00:11:35 CEST 2002
-	- modified docs, license details
-	- fixed wrong hangup() call
-
-1.14  Mon Jun 03 21:53:05 CEST 2002
-        - added is_active() method to test if modem ... (guess :-)
-        - tested, now seems to work, dial() method
-        - fixed a *bad* bug in modem answer parsing routine
-        - better timing and less waits in AT commands
-        - moved "PRE-ALPHA" to "ALPHA" :-)
-
-1.15  Tue Jun 04 23:20:12 CEST 2002
-	- modified makefile/test procedure to pass automated cpan tests
-
-1.16  Mon Jun 17 21:58:22 CEST 2002
-	- added S_register() method to read/write S-registers;
-	- store_number() to store an address-book number (cannot retrieve yet);
-	- restore_factory_settings() now accepts a number of profile (default=0);
-	- dial() now dials also address book numbers (only if supplied number
-	  is composed of 1 digit: the address book position, from 0 to 9).
-        - status() method added, which looks up CTS, DSR, RLSD and RING signals;
-
-1.17
-1.18  Tue Sep  3 21:57:11 CEST 2002
-	- removed some warnings and error in regexp pattern, slight changes in
-          documentation
+1.23  Wed Dec  4 00:34:52 CET 2002
+        - little documentation adjustments in main Modem.pm class;
+        - removed use of `warnings.pm' 
+        - now File log class opens the log file once and writes
+          on already opened file handle, until final close().
+        - Thanks to Joerg Neuberger for spotting out a problem with
+          older perls (5.005_xx) and `use warnings'
 
 1.19
 1.20  Thu Sep 12 00:19:11 CEST 2002
@@ -57,11 +27,55 @@ Revision history for Perl extension Device::Modem.
 	  big serial messages (removed this from TODO list).
 	- removed warnings on undefined answer strings.
 
-1.23  Wed Dec  4 00:34:52 CET 2002
-        - little documentation adjustments in main Modem.pm class;
-        - removed use of `warnings.pm' 
-        - now File log class opens the log file once and writes
-          on already opened file handle, until final close().
-        - Thanks to Joerg Neuberger for spotting out a problem with
-          older perls (5.005_xx) and `use warnings'
+
+1.17
+1.18  Tue Sep  3 21:57:11 CEST 2002
+	- removed some warnings and error in regexp pattern, slight changes in
+          documentation
+
+
+1.16  Mon Jun 17 21:58:22 CEST 2002
+	- added S_register() method to read/write S-registers;
+	- store_number() to store an address-book number (cannot retrieve yet);
+	- restore_factory_settings() now accepts a number of profile (default=0);
+	- dial() now dials also address book numbers (only if supplied number
+	  is composed of 1 digit: the address book position, from 0 to 9).
+        - status() method added, which looks up CTS, DSR, RLSD and RING signals;
+
+1.15  Tue Jun 04 23:20:12 CEST 2002
+	- modified makefile/test procedure to pass automated cpan tests
+
+
+1.14  Mon Jun 03 21:53:05 CEST 2002
+        - added is_active() method to test if modem ... (guess :-)
+        - tested, now seems to work, dial() method
+        - fixed a *bad* bug in modem answer parsing routine
+        - better timing and less waits in AT commands
+        - moved "PRE-ALPHA" to "ALPHA" :-)
+
+1.10  Wed Apr 10 00:11:35 CEST 2002
+	- modified docs, license details
+	- fixed wrong hangup() call
+
+1.08  Wed Apr  3 23:31:58 CEST 2002
+	- fixed logging classes auto-load mechanism
+	- added parse_answer() function, to easily retrieve
+	  informational responses
+	- added TO-DO list to pod
+
+1.07  Wed Apr  3 22:05:00 CEST 2002
+	- renamed `serial' parameter as `port', syncing with
+	  existent docs
+	- removed some warnings on parameters passing
+
+1.05  Sat Mar 30 16:19:40 CET 2002
+	- added and documented dial() and repeat(), still
+      to be tested!
+
+1.04  Mon Mar 25 07:37:20 CET 2002
+    - cleaned up docs and some of source code
+
+0.01  Tue Feb 26 22:15:22 CET 2002
+	- original version; created by h2xs 1.20 with options
+		-A -X -n Device::Modem -v 0.01
 
