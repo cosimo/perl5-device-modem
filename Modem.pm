@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.21 2002-09-25 22:13:57 cosimo Exp $
+# $Id: Modem.pm,v 1.22 2002-09-25 22:20:06 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.21 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.22 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -739,14 +739,6 @@ None
 =head1 TO-DO
 
 =over 4
-
-=item *
-
-Document log interface
-
-Explain which type of logging hooks you can use with Device::Modem
-and its sub-classes (Device::Gsm). For now, they are only `file'
-and `syslog'
 
 =item *
 
