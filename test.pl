@@ -1,4 +1,4 @@
-# $Id: test.pl,v 1.9 2002-06-05 09:53:39 Cosimo Exp $
+# $Id: test.pl,v 1.10 2002-06-05 10:47:50 cosimo Exp $
 #
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
@@ -33,13 +33,13 @@ my $is_windoze = $^O =~ /Win/i;
 
 if( ! $is_windoze && ( $< || $> ) ) {
 	print "\n\n*** SKIPPING tests. You need root privileges to test modems on serial ports. Sorry\n";
-	skip(1) for (1..6);
+	print "skip $_\n" for (1..6);
 	exit(0);
 }
 
 
 print "\n\n*** REMEMBER to run these tests as `root' (where required)!\n\n"
-        unless $is_windoze;
+        unless( $is_windoze || ( $< + $> == 0 ) );
 
 sleep 1;
 
