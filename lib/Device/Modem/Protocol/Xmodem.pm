@@ -1,9 +1,20 @@
+# Device::Modem::Protocol::Xmodem - Xmodem file transfer protocol for Device::Modem class 
 #
-# $Id: Xmodem.pm,v 1.2 2003-10-15 23:44:20 cosimo Exp $
+# Initial revision: 1 Oct 2003
 #
-# Xmodem file transfer protocol perl implementation
-# Cosimo Streppone 01/10/2003
+# Copyright (C) 2003 Cosimo Streppone, cosimo@cpan.org
 #
+# This program is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+# Additionally, this is ALPHA software, still needs extensive
+# testing and support for generic AT commads, so use it at your own risk,
+# and without ANY warranty! Have fun.
+#
+# This Xmodem protocol version is indeed very alpha code,
+# probably does not work at all, so stay tuned...
+#
+# $Id: Xmodem.pm,v 1.3 2003-10-15 23:48:01 cosimo Exp $
 
 package Xmodem::Constants;
 
@@ -131,6 +142,9 @@ sub verify {
 	my($self, $type, $value) = @_;
 
 	# Detect type of value to be checked
+
+	# TODO use new constants
+
 	$type = 'checksum' unless defined $type;
 
 	if( $type eq 'checksum' ) {
@@ -440,6 +454,8 @@ block, or the list of B<blocks> from buffer.
 	my $last_block = $buf->last();
 
 	print 'now I have ', scalar($buf->blocks()), ' in the buffer';
+
+	# TODO document replace() function ???
 
 =head1 Xmodem::Constants
 
