@@ -1,5 +1,3 @@
-#!/usr/bin/perl -P- -*-perl-*-
-
 # Device::Modem - a Perl class to interface generic modems (AT-compliant)
 # Copyright (C) 2000-2002 Cosimo Streppone, cosimo@cpan.org
 #
@@ -23,10 +21,10 @@
 # support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.7 2002-04-03 20:03:50 cosimo Exp $
+# $Id: Modem.pm,v 1.8 2002-04-03 21:30:44 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.7 $ =~ /(\d)\.(\d+)/; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.8 $ =~ /(\d)\.(\d+)/; 
 
 use strict;
 use Device::SerialPort;
@@ -50,14 +48,14 @@ $Device::Modem::TIMEOUT  = 500;     # milliseconds;
 
 # Setup text and numerical response codes
 @Device::Modem::RESPONSE = ( 'OK', undef, 'RING', 'NO CARRIER', 'ERROR', undef, 'NO DIALTONE', 'BUSY' );
-%Device::Modem::RESPONSE = (
-	'OK'   => 'Command executed without errors',
-	'RING' => 'Detected phone ring',
-	'NO CARRIER'  => 'Link not established or disconnected',
-	'ERROR'       => 'Invalid command or command line too long',
-	'NO DIALTONE' => 'No dial tone, dialing not possible or wrong mode',
-	'BUSY'        => 'Remote terminal busy'
-);
+#%Device::Modem::RESPONSE = (
+#	'OK'   => 'Command executed without errors',
+#	'RING' => 'Detected phone ring',
+#	'NO CARRIER'  => 'Link not established or disconnected',
+#	'ERROR'       => 'Invalid command or command line too long',
+#	'NO DIALTONE' => 'No dial tone, dialing not possible or wrong mode',
+#	'BUSY'        => 'Remote terminal busy'
+#);
 
 # object constructor (prepare only object)
 sub new {
@@ -74,7 +72,7 @@ sub new {
 	my $package = 'Device::Modem::Log::'.ucfirst lc $method;
 	eval { require $logclass; };
 	unless($@) {
-		$aOpt{'_log'} = $package->new( split ',', ($options||'') );
+		$aOpt{'_log'} = $package->new( $class, ( split ',', ($options||'') ) );
 	}
 
 	bless \%aOpt, $class;                   # Instance $class object
@@ -350,6 +348,44 @@ sub answer {
 }
 
 
+# parse_answer() cleans out answer() result as response code +
+# useful information (useful in informative commands, for example
+# AT+CGMI)
+sub parse_answer {
+	my $me = shift;
+	my $buff;
+	my $msec = 100; 
+
+	my($howmany, $what) = $me->port->read($msec);
+	$buff = $what;
+
+	$me->log->write('info', 'parse_answer: read ['.$buff.']' );
+
+	# Flush receive and trasmit buffers
+	$me->port->purge_all;
+
+	# Trim result of beginning and ending CR+LF (XXX)
+	$buff =~ s/^[\r\n]+//;
+	$buff =~ s/[\r\n]+$//;
+
+	# Separate response code from information
+	my @response = split CR, $buff;
+
+	# Extract responde code
+	my $code = pop @response;
+
+	# Remove all empty lines before/after response
+	shift @response while( $response[0] eq CR() );
+	pop   @response while( $response[-1] eq CR() );
+
+	return
+		wantarray
+		? ($code, @response)
+		: $buff;
+
+}
+
+
 
 2703;
 
@@ -410,11 +446,13 @@ Device::Modem - Perl extension to talk to AT devices connected via serial port
   $modem->atsend( 'ATDT01234567' . Device::Modem::CR );
   print $modem->answer();
 
+
 =head1 DESCRIPTION
 
 Device::Modem class implements basic AT device abstraction. It is meant
 to be inherited by sub classes (as Device::Gsm), which are
 based on serial connections.
+
 
 =head2 REQUIRES
 
@@ -427,6 +465,37 @@ based on serial connections.
 =head2 EXPORT
 
 None
+
+
+
+=head1 TO-DO
+
+=over 4
+
+=item *
+
+AutoScan
+
+An AT command script with all interesting commands is run
+when `autoscan' is invoked, creating a `profile' of the
+current device, with list of supported commands, and database
+of brand/model-specific commands
+
+=item *
+
+Time::HiRes
+
+Check if Time::HiRes module is installed and use it
+to wait milliseconds instead of whole seconds
+
+
+=item *
+
+Many more to come!
+
+=back
+
+
 
 =head1 AUTHOR
 
