@@ -24,6 +24,8 @@
 		<li><a href="#is_it_multiplatform">Is it multi-platform?</a></li>
 		<li><a href="#can_i_use_it_for_my_commercial_application">Can I use it for my commercial application?</a></li>
 		<li><a href="#why_the__insert_you_preferred_feature_here__does_not_work">Why the [insert_you_preferred_feature_here] does not work?</a></li>
+		<li><a href="#why_i_keep_getting_can_t_open_device___dev_xxxxx_at_____modem_pm_line_468_errors_">Why I keep getting ``can't open device: /dev/xxxxx at .../Modem.pm line 468'' errors ?</a></li>
+		<li><a href="#why_i_get_the_error_can_t_call_method_purge_all_on_an_undefined_value_at_____modem_pm_line_545_">Why I get the error ``Can't call method ''purge_all`` on an undefined value at .../Modem.pm line 545'' ?</a></li>
 		<li><a href="#this_module_is_pretty_slow__what_can_i_do">This module is pretty slow. What can I do?</a></li>
 		<li><a href="#can_i_make_a__insert_your_preferred_number_here__euro_donation_to_you_for_this_fantastic_module">Can I make a [insert_your_preferred_number_here] euro donation to you for this fantastic module?</a></li>
 		<li><a href="#i_think_you_are_a___x__z______and_your_software_sucks">I think you are a ?#!x$*z!#(!* and your software sucks</a></li>
@@ -146,6 +148,25 @@ In case of doubt, send the output of:
         perl -MDevice::Modem -le 'print Device::Modem-&gt;VERSION'</pre>
 <p></p></ul>
 <p>Thank you.</p>
+<p>
+</p>
+<h2><a name="why_i_keep_getting_can_t_open_device___dev_xxxxx_at_____modem_pm_line_468_errors_">Why I keep getting ``can't open device: /dev/xxxxx at .../Modem.pm line 468'' errors ?</a></h2>
+<p>First of all, be sure to use <strong>Device::Modem version 1.35+</strong>.
+Probably you don't have the correct permissions to access your modem device
+(usually /dev/modem, or /dev/ttyS0 on unix and COM1/COM2/... on windows).
+Or you are trying to use the examples that come with Device::Modem distribution
+with an older version (Device::Modem &lt;= 1.33).
+In this case, you should upgrade to Device::Modem 1.35+.</p>
+<p>
+</p>
+<h2><a name="why_i_get_the_error_can_t_call_method_purge_all_on_an_undefined_value_at_____modem_pm_line_545_">Why I get the error ``Can't call method ''purge_all`` on an undefined value at .../Modem.pm line 545'' ?</a></h2>
+<p>Again, <strong>upgrade to Device::Modem version 1.35+</strong>.
+If you get this error, it means that the communication port could not be opened.
+Most probably you don't have permissions to access your serial port, or you have
+used a wrong device name (check your device entry in <code>/dev</code> folder).
+Maybe you are trying to use the examples that come with Device::Modem distribution
+with an older version (Device::Modem &lt;= 1.33).
+In this case, you should upgrade to Device::Modem 1.35+.</p>
 <p>
 </p>
 <h2><a name="this_module_is_pretty_slow__what_can_i_do">This module is pretty slow. What can I do?</a></h2>
