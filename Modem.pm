@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.14 2002-06-03 20:00:07 Cosimo Exp $
+# $Id: Modem.pm,v 1.15 2002-06-05 09:56:53 Cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.14 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.15 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 	if( $^O =~ /Win/i ) {
@@ -35,7 +35,7 @@ use constant CR => "\r";
 
 # Connection defaults
 $Device::Modem::DEFAULT_PORT = ( $^O =~ /win32/i ) ? 'COM1' : '/dev/modem';
-$Device::Modem::BAUDRATE = 38400;
+$Device::Modem::BAUDRATE = 19200;
 $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
 $Device::Modem::PARITY   = 'none';
@@ -494,7 +494,7 @@ Device::Modem - Perl extension to talk to modem devices connected via serial por
 =head1 WARNING
 
    This is C<ALPHA> software, still needs extensive testing and
-   support for generic AT commads, so use it at your own risk,
+   support for generic AT commands, so use it at your own risk,
    and without C<ANY> warranty! Have fun.
 
 =head1 SYNOPSIS
@@ -528,7 +528,7 @@ Device::Modem - Perl extension to talk to modem devices connected via serial por
                                 # Handle with care!
 
   $modem->send_init_string();   # Send initialization string
-                                # Now this is fixed to `ATZ0H0V1Q0E0'
+                                # Now this is fixed to 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4'
 
 
   $modem->repeat();             # Repeat last command
