@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.31 2003-12-15 23:05:18 cosimo Exp $
+# $Id: Modem.pm,v 1.32 2004-01-23 00:14:30 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.31 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.32 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -832,6 +832,10 @@ expected string is encountered. Example:
 Returns C<$answer> that is the string received from modem stripped of all
 B<Carriage Return> and B<Line Feed> chars B<only> at the beginning and at the end of the
 string. No in-between B<CR+LF> are stripped.
+
+Note that if you need the raw answer from the modem, you can use the _answer() (note
+that underscore char before answer) method, which does not strip anything from the response,
+so you get the real modem answer string.
 
 Parameters:
 
