@@ -51,9 +51,15 @@ Revision history for Perl extension Device::Modem.
 
 1.19
 1.20  Thu Sep 12 00:19:11 CEST 2002
-1.21  Thu Sep 26 00:16:49 CEST 2002
+1.22  Thu Sep 26 00:16:49 CEST 2002
 	- improved command/response cycle with proper handling of timeout
           and idle/data cycles. Now it is more reliable also with fairly
 	  big serial messages (removed this from TODO list).
 	- removed warnings on undefined answer strings.
+
+
+1.23  Tue Dec  3 23:16:38 CET 2002
+	- little documentation adjustments
+	- log classes revisited, especially Device::Modem::Log::File
+	  (also thanks to Joerg Neuberger)
 
