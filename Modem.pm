@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.39 2004-08-18 07:33:32 cosimo Exp $
+# $Id: Modem.pm,v 1.40 2004-09-15 21:16:44 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.39 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.40 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -649,20 +649,28 @@ sub parse_answer {
     my $buff = $me->answer( @_ );
 
     # Separate response code from information
-    my @buff = split /[\r\n]+/o, $buff;
+    if( defined $buff && $buff ne '' ) {
 
-    # Remove all empty lines before/after response
-    shift @buff while $buff[0]  =~ /^[\r\n]+/o;
-    pop   @buff while $buff[-1] =~ /^[\r\n]+/o;
+        my @buff = split /[\r\n]+/o, $buff;
 
-    # Extract responde code
-    $buff = join( CR, @buff );
-    my $code = pop @buff;
+        # Remove all empty lines before/after response
+        shift @buff while $buff[0]  =~ /^[\r\n]+/o;
+        pop   @buff while $buff[-1] =~ /^[\r\n]+/o;
 
-    return
-      wantarray
-      ? ($code, @buff)
-      : $buff;
+        # Extract responde code
+        $buff = join( CR, @buff );
+        my $code = pop @buff;
+
+        return
+            wantarray
+            ? ($code, @buff)
+            : $buff;
+            
+    } else {
+    
+        return '';
+
+    }
 
 }
 
