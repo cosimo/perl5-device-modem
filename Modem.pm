@@ -9,18 +9,35 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.15 2002-06-05 09:56:53 Cosimo Exp $
+# $Id: Modem.pm,v 1.16 2002-06-17 20:26:28 Cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.15 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.16 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
+
 	if( $^O =~ /Win/i ) {
+
 		require Win32::SerialPort;
 		import  Win32::SerialPort;
+
+		# Import line status constants from Win32::SerialPort module
+		*Device::Modem::MS_CTS_ON  = *Win32::SerialPort::MS_CTS_ON;
+		*Device::Modem::MS_DSR_ON  = *Win32::SerialPort::MS_DSR_ON;
+		*Device::Modem::MS_RING_ON = *Win32::SerialPort::MS_RING_ON;
+		*Device::Modem::MS_RLSD_ON = *Win32::SerialPort::MS_RLSD_ON;
+
 	} else {
+
 		require Device::SerialPort;
 		import  Device::SerialPort;
+
+		# Import line status constants from Device::SerialPort module
+		*Device::Modem::MS_CTS_ON = *Device::SerialPort::MS_CTS_ON;
+		*Device::Modem::MS_DSR_ON = *Device::SerialPort::MS_DSR_ON;
+		*Device::Modem::MS_RING_ON = *Device::SerialPort::MS_RING_ON;
+		*Device::Modem::MS_RLSD_ON = *Device::SerialPort::MS_RLSD_ON;
+
 	}
 }
 
@@ -98,6 +115,15 @@ sub attention {
 	$self->answer();
 }
 
+#
+# Dial telephone number
+#
+# dial( number, timeout )
+# example: dial( '0289011124', 45 ) (timeout in seconds)
+#
+# if number to dial is 1-digit, takes number from address book
+# [ see store_number() ]
+#
 sub dial {
 	my($self, $number, $timeout) = @_;
 	my $lOk = 0;
@@ -112,7 +138,7 @@ sub dial {
 	}
 
 	# Check if no number supplied
-	if( ! $number ) {
+	if( ! defined $number ) {
 		#
 		# XXX Here we could enable ATDL command (dial last number)
 		#
@@ -120,12 +146,17 @@ sub dial {
 		return;
 	}
 
-	# Remove all non [0-9,\s] chars
-	$number =~ s/[^0-9,\s]//g;
+	# Remove all non number chars plus some others allowed
+	$number =~ s/[^0-9,\(\)\*-\s]//g;
 
 	# Dial number and wait for response
-	$self->log->write('info', 'dialing number ['.$number.']' );
-	$self->atsend( 'ATDT' . $number . CR );
+	if( length $number == 1 ) {
+		$self->log->write('info', 'dialing address book number ['.$number.']' );
+		$self->atsend( 'ATDS' . $number . CR );
+	} else {
+		$self->log->write('info', 'dialing number ['.$number.']' );
+		$self->atsend( 'ATDT' . $number . CR );
+	}
 
 	# XXX Check response times here (timeout!)
 	my $ans = $self->answer(undef, $timeout * 1000 );
@@ -208,6 +239,47 @@ sub offhook {
 	return 1;
 }
 
+# Get/Set S* registers value:  S_register( number [, new_value] )
+# returns undef on failure ( zero is a good value )
+sub S_register {
+	my $self = shift;
+	my $register = shift;
+	my $value = 0;
+
+	return unless $register;
+
+	my $ok;
+
+	# If `new_value' supplied, we want to update value of this register
+	if( @_ ) {
+
+		my $new_value = shift;
+		$new_value =~ s|\D||g;
+		$self->log->write('info', 'storing value ['.$new_value.'] into register S'.$register);
+		$self->atsend( sprintf( 'AT S%02d=%d' . CR, $register, $new_value ) );
+
+		$value = ( index( $self->answer, 'OK' ) != -1 ) ? $new_value : undef;
+
+	} else {
+
+		$self->atsend( sprintf( 'AT S%d?' . CR, $register ) );
+		($ok, $value) = $self->parse_answer();
+
+		if( index($ok, 'OK') != -1 ) {
+			$self->log->write('info', 'value of S'.$register.' register seems to be ['.$value.']');
+		} else {
+			$value = undef;
+			$self->log->write('error', 'error reading value of S'.$register.' register');
+		}
+
+	}
+
+	# Return updated value of register
+	$self->log->write('info', 'S'.$register.' = '.$value);
+
+	return $value;
+}
+
 # Repeat the last commands (this comes gratis with `A/' at-command)
 sub repeat {
 	my $self = shift;
@@ -229,16 +301,72 @@ sub reset {
 	return $self->answer();
 }
 
+# Return an hash with the status of main modem signals
+sub status {
+	my $self = shift;
+	$self->log->write('info', 'getting modem line status on '.$self->{'port'});
+
+	# This also relies on Device::SerialPort
+	my $status = $self->port->modemlines();
+
+	# See top of module for these constants, exported by (Win32|Device)::SerialPort
+	my %signal = (
+		CTS  => $status & Device::Modem::MS_CTS_ON,
+		DSR  => $status & Device::Modem::MS_DSR_ON,
+		RING => $status & Device::Modem::MS_RING_ON,
+		RLSD => $status & Device::Modem::MS_RLSD_ON
+	);
+
+	$self->log->write('info', 'modem on '.$self->{'port'}.' status is ['.$status.']');
+	$self->log->write('info', "CTS:$signal{CTS} DSR=$signal{DSR} RING=$signal{RING} RLSD=$signal{RLSD}");
+
+	return %signal;
+}
+
 # Of little use here, but nice to have it
+# restore_factory_settings( profile )
+# profile can be 0 or 1
 sub restore_factory_settings {
 	my $self = shift;
+	my $profile = shift;
+	$profile = 0 unless defined $profile;
 
-	$self->log->write('warning', 'restoring factory settings on '.$self->{'port'} );
-	$self->atsend( 'AT&F' . CR);
+	$self->log->write('warning', 'restoring factory settings '.$profile.' on '.$self->{'port'} );
+	$self->atsend( 'AT&F'.$profile . CR);
 
 	$self->answer();
 }
 
+# Store telephone number in modem's internal address book, to dial later
+# store_number( position, number )
+sub store_number {
+	my( $self, $position, $number ) = @_;
+	my $lOk = 0;
+
+	# Check parameters
+	unless( defined($position) && $number ) {
+		$self->log->write('warn', 'store_number() called with wrong parameters');
+		return $lOk;
+	}
+
+	$self->log->write('info', 'storing number ['.$number.'] into memory ['.$position.']');
+
+	# Remove all non-numerical chars from position and number
+	$position =~ s/\D//g;
+	$number   =~ s/[^0-9,]//g;
+
+	$self->atsend( sprintf( 'AT &Z%d=%s' . CR, $position, $number ) );
+
+	if( index( $self->answer(), 'OK' ) != -1 ) {
+		$self->log->write('info', 'stored number ['.$number.'] into memory ['.$position.']');
+		$lOk = 1;
+	} else {
+		$self->log->write('warn', 'error storing number ['.$number.'] into memory ['.$position.']');
+		$lOk = 0;
+	}
+
+	return $lOk;
+}
 
 # Enable/disable verbose response messages against numerical response messages
 # XXX I need to manage also numerical values...
@@ -501,17 +629,18 @@ Device::Modem - Perl extension to talk to modem devices connected via serial por
 
   use Device::Modem;
 
-  my $modem = new Device::Modem( port => '/dev/ttyS1' )
+  my $modem = new Device::Modem( port => '/dev/ttyS1' );
 
   if( $modem->connect( baudrate => 9600 ) ) {
       print "connected!\n";
   } else {
-      print "sorry, no connection with serial port!\n';
+      print "sorry, no connection with serial port!\n";
   }
 
   $modem->attention();          # send `attention' sequence (+++)
 
   $modem->dial('02270469012');  # dial phone number
+  $modem->dial(3);              # 1-digit parameter = dial number stored in memory 3
 
   $modem->echo(1);              # enable local echo
   $modem->echo(0);              # disable it
@@ -524,12 +653,22 @@ Device::Modem - Perl extension to talk to modem devices connected via serial por
 
   $modem->reset();              # hangup + attention + restore setting 0 (Z0)
 
-  $modem->restore_factory_settings();
-                                # Handle with care!
+  $modem->restore_factory_settings();  # Handle with care!
+  $modem->restore_factory_settings(1); # Same with preset profile 1 (can be 0 or 1)
 
   $modem->send_init_string();   # Send initialization string
                                 # Now this is fixed to 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4'
 
+  # Get/Set value of S1 register
+  my $S1 = $modem->S_register(1);
+  my $S1 = $modem->S_register(1, 55); # Don't do that if you definitely don't know!
+
+  # Get status of managed signals (CTS, DSR, RLSD, RING)
+  my %signal = $modem->status();
+  if( $signal{DSR} ) { print "Data Set Ready signal active!\n"; }
+
+  # Stores this number in modem memory number 3
+  $modem->store_number(3, '01005552817');
 
   $modem->repeat();             # Repeat last command
 
@@ -571,6 +710,13 @@ None
 
 =item *
 
+Improve question/answer cycle
+
+Do something better on question/answer routines with better
+initializations, timeout handling and signals lookup.
+
+=item *
+
 Document log interface
 
 Explain which type of logging hooks you can use with Device::Modem
@@ -585,10 +731,6 @@ An AT command script with all interesting commands is run
 when `autoscan' is invoked, creating a `profile' of the
 current device, with list of supported commands, and database
 of brand/model-specific commands
-
-=item *
-
-Test `parse_answer()' method
 
 =item *
 
