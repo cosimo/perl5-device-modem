@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.19 2002-09-11 22:17:10 cosimo Exp $
+# $Id: Modem.pm,v 1.20 2002-09-11 22:37:29 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.19 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.20 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -570,24 +570,26 @@ sub answer {
 			? $answer =~ /$expect/
 			: $idle_cycles == $max_idle_cycles;
 
-		$me->log->write('debug', 'answer: idle_c='.$idle_cycles.'/'.$max_idle_cycles.' read_till_now='.$answer.' matched='.$done);
+		$me->log->write('debug', 'answer: idle_c='.$idle_cycles.'/'.$max_idle_cycles.' read_till_now='.($answer||'').' matched='.$done);
 
 		select undef, undef, undef, $time_slice unless $done;
 
 	} while( not $done );
 
-	$me->log->write('debug', 'answer: read ['.$answer.']' );
+	$me->log->write('debug', 'answer: read ['.($answer||'').']' );
 
 	# Flush receive and trasmit buffers
 	$me->port->purge_all;
 
 	# Trim result of beginning and ending CR+LF (XXX)
-	$answer =~ s/^[\r\n]+//;
-	$answer =~ s/[\r\n]+$//;
+	if( defined $answer ) {
+		$answer =~ s/^[\r\n]+//;
+		$answer =~ s/[\r\n]+$//;
+	}
 
-	$me->log->write('info', 'answer: `'.$answer.'\'' );
+	$me->log->write('info', 'answer: `'.($answer||'').'\'' );
 
-	$answer;
+	return $answer;
 }
 
 
