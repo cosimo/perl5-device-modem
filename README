@@ -1,32 +1,36 @@
 NAME
-    Device::Modem - Perl extension to talk to AT devices connected via
+    Device::Modem - Perl extension to talk to modem devices connected via
     serial port
 
 WARNING
-       This is C<PRE-ALPHA> software, still needs extensive testing and
+       This is C<ALPHA> software, still needs extensive testing and
        support for generic AT commads, so use it at your own risk,
        and without C<ANY> warranty! Have fun.
 
 SYNOPSIS
       use Device::Modem;
 
-      my $modem = new Device::Modem( port => '/dev/ttyS1', baud => 9600 )
+      my $modem = new Device::Modem( port => '/dev/ttyS1' )
 
-      if( $modem->connect() ) {
+      if( $modem->connect( baudrate => 9600 ) ) {
           print "connected!\n";
       } else {
           print "sorry, no connection with serial port!\n';
       }
 
       $modem->attention();          # send `attention' sequence (+++)
- 
-      $modem->dial( '022704690' );  # dial number (*NOT WORKING YET*)
- 
+
+      $modem->dial('02270469012');  # dial phone number
+
       $modem->echo(1);              # enable local echo
       $modem->echo(0);              # disable it
 
       $modem->offhook();            # Take off hook (ready to dial)
       $modem->hangup();             # returns modem answer
+
+      $modem->is_active();          # Tests whether modem device is active or not
+                                    # So far it works for modem OFF/ modem ON condition
+
       $modem->reset();              # hangup + attention + restore setting 0 (Z0)
 
       $modem->restore_factory_settings();
@@ -39,9 +43,9 @@ SYNOPSIS
 
       $modem->verbose(0);           # Modem responses are numerical
       $modem->verbose(1);           # Normal text responses
- 
+
       #
-      # Some raw at commands
+      # Some raw AT commands
       #
       $modem->atsend( 'ATH0' );
       print $modem->answer();
@@ -50,9 +54,9 @@ SYNOPSIS
       print $modem->answer();
 
 DESCRIPTION
-    Device::Modem class implements basic AT device abstraction. It is meant
-    to be inherited by sub classes (as Device::Gsm), which are based on
-    serial connections.
+    Device::Modem class implements basic AT (Hayes) compliant device
+    abstraction. It is meant to be inherited by sub classes (as
+    Device::Gsm), which are based on serial connections.
 
   REQUIRES
 
@@ -62,7 +66,7 @@ DESCRIPTION
     None
 
 TO-DO
-    *   Logging mechanism
+    *   Document log interface
 
         Explain which type of logging hooks you can use with Device::Modem
         and its sub-classes (Device::Gsm). For now, they are only `file' and
@@ -75,10 +79,7 @@ TO-DO
         with list of supported commands, and database of
         brand/model-specific commands
 
-    *   Time::HiRes
-
-        Check if Time::HiRes module is installed and use it to wait
-        milliseconds instead of whole seconds
+    *   Test `parse_answer()' method
 
     *   Many more to come!
 
@@ -86,10 +87,11 @@ AUTHOR
     Cosimo Streppone, cosimo@cpan.org
 
 COPYRIGHT
+    (C) 2002 Cosimo Streppone, cosimo@cpan.org
+
     This library is free software; you can only redistribute it and/or
     modify it under the same terms as Perl itself.
 
 SEE ALSO
-    the Device::SerialPort manpage, the Win32::SerialPort manpage, the perl
-    manpage.
+    Device::SerialPort, Win32::SerialPort, perl
 

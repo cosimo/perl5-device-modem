@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.13 2002-05-22 20:46:46 cosimo Exp $
+# $Id: Modem.pm,v 1.14 2002-06-03 20:00:07 Cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.13 $ =~ /(\d)\.(\d+)/; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.14 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 	if( $^O =~ /Win/i ) {
@@ -62,6 +62,9 @@ sub new {
 	$aOpt{'ostype'} = $^O;                  # Store OSTYPE in object
 	$aOpt{'ostype'} =~ /Win/i and $aOpt{'ostype'} = 'windoze';
 
+	# Initialize flags array
+	$aOpt{'flags'} = {};
+
 	$aOpt{'port'} ||= $Device::Modem::DEFAULT_PORT;
 
 	# Instance log object
@@ -89,17 +92,27 @@ sub attention {
 	# Send attention sequence
 	$self->atsend('+++');
 
-	# Wait 500 milliseconds
-	$self->wait(500);
+	# Wait 200 milliseconds
+	$self->wait(200);
 
 	$self->answer();
 }
 
 sub dial {
-	my($self, $number) = @_;
+	my($self, $number, $timeout) = @_;
+	my $lOk = 0;
 
-	unless( $number ) {
+	# Default timeout in seconds
+	$timeout ||= 30;
 
+	# Check if we have already dialed some number...
+	if( $self->flag('CARRIER') ) {
+		$self->log->write( 'warning', 'line is already connected, ignoring dial()' );
+		return;
+	}
+
+	# Check if no number supplied
+	if( ! $number ) {
 		#
 		# XXX Here we could enable ATDL command (dial last number)
 		#
@@ -115,42 +128,87 @@ sub dial {
 	$self->atsend( 'ATDT' . $number . CR );
 
 	# XXX Check response times here (timeout!)
-	$self->answer();
+	my $ans = $self->answer(undef, $timeout * 1000 );
+
+	if( index( $ans, 'CONNECT' ) > -1 ) {
+		$lOk = 1;
+	}
+
+	# Turn on/off `CARRIER' flag
+	$self->flag('CARRIER', $lOk);
+
+	$self->log->write('info', 'dialing result = '.$lOk);
+	return $lOk;
 }
 
-
+# Enable/disable local echo of commands (enabling echo can cause everything else to fail, I think)
 sub echo {
 	my($self, $lEnable) = @_;
 
 	$self->log->write( 'info', ( $lEnable ? 'enabling' : 'disabling' ) . ' echo' );
 	$self->atsend( ($lEnable ? 'ATE1' : 'ATE0') . CR );
 
-	$self->answer();
+	$self->answer('OK');
 }
 
+# Terminate current call (XXX not tested)
 sub hangup {
 	my $self = shift;
 
 	$self->log->write('info', 'hanging up...');
 	$self->attention();
 	$self->atsend( 'ATH0' . CR );
-
-	$self->flag('OFFHOOK', 0);
-
+	$self->_reset_flags();
 	$self->answer();
 }
 
+# Checks if modem is enabled (for now, it works ok for modem OFF/ON case)
+sub is_active {
+	my $self = shift;
+	my $lOk;
+
+	$self->log->write('info', 'testing modem activity on port '.$self->options->{'port'} );
+
+	# Modem is active if already connected to a line
+	if( $self->flag('CARRIER') ) {
+
+
+		$self->log->write('info', 'carrier is '.$self->flag('CARRIER').', modem is connected, it should be active');
+		$lOk = 1;
+
+	} else {
+
+		# Try sending an echo enable|disable command
+		$self->attention();
+		$self->verbose(0);
+		$lOk = $self->verbose(1);
+
+		# If we have no success, try to reset
+		if( ! $lOk ) {
+			$self->log->write('warning', 'modem not responding... trying to reset');
+			$lOk = $self->reset();
+		}
+
+	}
+
+	$self->log->write('info', 'modem reset result = '.$lOk);
+
+	return $lOk;
+}
+
+# Take modem off hook, prepare to dial
 sub offhook {
 	my $self = shift;
 
 	$self->log->write('info', 'taking off hook');
 	$self->atsend( 'ATH1' . CR );
-	
+
 	$self->flag('OFFHOOK', 1);
 
 	return 1;
 }
 
+# Repeat the last commands (this comes gratis with `A/' at-command)
 sub repeat {
 	my $self = shift;
 
@@ -160,20 +218,18 @@ sub repeat {
 	$self->answer();
 }
 
+# Complete modem reset
 sub reset {
 	my $self = shift;
 
 	$self->log->write('warning', 'resetting modem on '.$self->{'port'} );
-
 	$self->hangup();
-
 	$self->send_init_string();
-
-	$self->reset_flags();
-
+	$self->_reset_flags();
 	return $self->answer();
 }
 
+# Of little use here, but nice to have it
 sub restore_factory_settings {
 	my $self = shift;
 
@@ -183,43 +239,49 @@ sub restore_factory_settings {
 	$self->answer();
 }
 
+
+# Enable/disable verbose response messages against numerical response messages
+# XXX I need to manage also numerical values...
 sub verbose {
 	my($self, $lEnable) = @_;
 
 	$self->log->write( 'info', ( $lEnable ? 'enabling' : 'disabling' ) . ' verbose messages' );
 	$self->atsend( ($lEnable ? 'ATQ0V1' : 'ATQ0V0') . CR );
 
-	$self->answer();
+	$self->answer('OK');
 }
+
 
 sub wait {
 	my( $self, $msec ) = @_;
 
-	# TODO
-	# Check if Time::HiRes module is loaded and available	
-	#
-
 	$self->log->write('info', 'waiting for '.$msec.' msecs');
 
-	sleep( int($msec / 1000) );
+	# Perhaps Time::HiRes here is not so useful, since I tested `select()' system call also on Windows
+	select( undef, undef, undef, $msec / 1000 );
 	return 1;
 
 }
 
-# Set a named flag
-# flags are now: OFFHOOK
+# Set a named flag. Flags are now: OFFHOOK, CARRIER
 sub flag {
-	my($self, $cFlag) = @_;
-	$cFlag = uc $cFlag;
+	my $self = shift;
+	my $cFlag = uc shift;
+
 	$self->{'_flags'}->{$cFlag} = shift() if @_;
+
 	$self->{'_flags'}->{$cFlag};
 }
 
-sub reset_flags {
+# reset internal flags that tell the status of modem (XXX to be extended)
+sub _reset_flags {
 	my $self = shift();
-	map { $self->flag($_, 0) } 'OFFHOOK';
+
+	map { $self->flag($_, 0) }
+		'OFFHOOK', 'CARRIER';
 }
 
+# initialize modem with some basic commands (XXX &C0)
 sub send_init_string {
 	my($self, $cInit) = @_;
 	$self->attention();
@@ -228,10 +290,12 @@ sub send_init_string {
 	$self->answer();
 }
 
+# returns log object reference
 sub log {
 	shift()->{'_log'}
 }
 
+# instances (Device|Win32)::SerialPort object and initializes communications
 sub connect {
 	my $me = shift();
 
@@ -250,7 +314,7 @@ sub connect {
 
 	# Store communication options in object
 	$me->{'_comm_options'} = \%aOpt;
-	
+
 	# Connect on serial (use different mod for win32)
 	if( $me->ostype eq 'windoze' ) {
 		$me->port( new Win32::SerialPort($me->{'port'}) );
@@ -286,6 +350,7 @@ sub connect {
 	$me-> log -> write('info', 'sending init string...' );
 
 	$me-> send_init_string();
+	$me-> _reset_flags();
 
 	# Disable local echo
 	$me-> echo(0);
@@ -345,43 +410,54 @@ sub answer {
 	my $me = shift;
 	my($expect, $timeout) = @_;
 
-	$timeout ||= 200;                           # default wait is 200 milliseconds
+	$timeout ||= 200;                           # default wait
+	my $time_slice = 100;                       # single cycle wait time
 
-	# Single cycle wait time
-	my $time_slice = 100;                       # milliseconds
 	my $cycles = $timeout / $time_slice;
 
 	# If we expect something, we must first match against serial input
-	my $matched = not $expect;
+	my $matched = (defined $expect and $expect ne '');
+
+	$time_slice /= 1000;
+
+	$me->log->write('info', 'answer: expecting ['.$expect.'] or timeout ['.$timeout.']' );
 
 	# Main read cycle
 	my $cycle = 0;
-	my $buff;
+	my $answer;
 	do {
-		my($howmany, $what) = $me->port->read( $time_slice );
-		$buff .= $what if defined $what;
+		my($howmany, $what) = $me->port->read(100);
+		$answer .= $what if defined $what;
 
 		# Check if buffer matches "expect string"
-		$expect and $matched = $buff =~ /$expect/;
+		$matched = $expect
+			? $answer =~ /$expect/
+			: length $answer;
 
-	} while( ++$cycle < $cycles || not $matched );
+		$me->log->write('debug', 'answer: cycle='.$cycle.'/'.$cycles.' read_till_now='.$answer.' matched='.$matched);
 
-	$me->log->write('info', 'answer: read ['.$buff.']' );
+		select undef, undef, undef, 0.1;
+
+	} while( ++$cycle < $cycles and not $matched and not $answer );
+
+	$me->log->write('debug', 'answer: read ['.$answer.']' );
 
 	# Flush receive and trasmit buffers
 	$me->port->purge_all;
 
 	# Trim result of beginning and ending CR+LF (XXX)
-	$buff =~ s/^[\r\n]+//;
-	$buff =~ s/[\r\n]+$//;
+	$answer =~ s/^[\r\n]+//;
+	$answer =~ s/[\r\n]+$//;
 
-	$buff;
+	$me->log->write('info', 'answer: `'.$answer.'\'' );
+
+	$answer;
 }
 
 
 # parse_answer() cleans out answer() result as response code +
 # useful information (useful in informative commands, for example
-# AT+CGMI)
+# Gsm command AT+CGMI)
 sub parse_answer {
 	my $me = shift;
 
@@ -413,11 +489,11 @@ __END__
 
 =head1 NAME
 
-Device::Modem - Perl extension to talk to AT devices connected via serial port
+Device::Modem - Perl extension to talk to modem devices connected via serial port
 
 =head1 WARNING
 
-   This is C<PRE-ALPHA> software, still needs extensive testing and
+   This is C<ALPHA> software, still needs extensive testing and
    support for generic AT commads, so use it at your own risk,
    and without C<ANY> warranty! Have fun.
 
@@ -425,23 +501,27 @@ Device::Modem - Perl extension to talk to AT devices connected via serial port
 
   use Device::Modem;
 
-  my $modem = new Device::Modem( port => '/dev/ttyS1', baud => 9600 )
+  my $modem = new Device::Modem( port => '/dev/ttyS1' )
 
-  if( $modem->connect() ) {
+  if( $modem->connect( baudrate => 9600 ) ) {
       print "connected!\n";
   } else {
       print "sorry, no connection with serial port!\n';
   }
 
   $modem->attention();          # send `attention' sequence (+++)
- 
-  $modem->dial( '022704690' );  # dial number (*NOT WORKING YET*)
- 
+
+  $modem->dial('02270469012');  # dial phone number
+
   $modem->echo(1);              # enable local echo
   $modem->echo(0);              # disable it
 
   $modem->offhook();            # Take off hook (ready to dial)
   $modem->hangup();             # returns modem answer
+
+  $modem->is_active();          # Tests whether modem device is active or not
+                                # So far it works for modem OFF/ modem ON condition
+
   $modem->reset();              # hangup + attention + restore setting 0 (Z0)
 
   $modem->restore_factory_settings();
@@ -455,9 +535,9 @@ Device::Modem - Perl extension to talk to AT devices connected via serial port
 
   $modem->verbose(0);           # Modem responses are numerical
   $modem->verbose(1);           # Normal text responses
- 
+
   #
-  # Some raw at commands
+  # Some raw AT commands
   #
   $modem->atsend( 'ATH0' );
   print $modem->answer();
@@ -468,10 +548,8 @@ Device::Modem - Perl extension to talk to AT devices connected via serial port
 
 =head1 DESCRIPTION
 
-Device::Modem class implements basic AT device abstraction. It is meant
-to be inherited by sub classes (as Device::Gsm), which are
-based on serial connections.
-
+Device::Modem class implements basic AT (Hayes) compliant device abstraction. It is meant
+to be inherited by sub classes (as Device::Gsm), which are based on serial connections.
 
 =head2 REQUIRES
 
@@ -493,7 +571,7 @@ None
 
 =item *
 
-Logging mechanism
+Document log interface
 
 Explain which type of logging hooks you can use with Device::Modem
 and its sub-classes (Device::Gsm). For now, they are only `file'
@@ -512,7 +590,7 @@ of brand/model-specific commands
 
 Test `parse_answer()' method
 
-item *
+=item *
 
 Many more to come!
 
@@ -526,11 +604,15 @@ Cosimo Streppone, L<cosimo@cpan.org|mailto:cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
+(C) 2002 Cosimo Streppone, L<cosimo@cpan.org|mailto:cosimo@cpan.org>
+
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<Device::SerialPort>, L<Win32::SerialPort>, L<perl>.
+Device::SerialPort,
+Win32::SerialPort,
+perl
 
 =cut

@@ -1,7 +1,7 @@
 <HTML>
 <HEAD>
-<TITLE>Device::Modem - Perl extension to talk to AT devices connected via serial port</TITLE>
-<LINK REV="made" HREF="mailto:cosimo@cpan.org">
+<TITLE>Device::Modem - Perl extension to talk to modem devices connected via serial port</TITLE>
+<LINK REV="made" HREF="mailto:">
 </HEAD>
 
 <BODY>
@@ -31,12 +31,12 @@
 <HR>
 <P>
 <H1><A NAME="name">NAME</A></H1>
-<P>Device::Modem - Perl extension to talk to AT devices connected via serial port</P>
+<P>Device::Modem - Perl extension to talk to modem devices connected via serial port</P>
 <P>
 <HR>
 <H1><A NAME="warning">WARNING</A></H1>
 <PRE>
-   This is C&lt;PRE-ALPHA&gt; software, still needs extensive testing and
+   This is C&lt;ALPHA&gt; software, still needs extensive testing and
    support for generic AT commads, so use it at your own risk,
    and without C&lt;ANY&gt; warranty! Have fun.</PRE>
 <P>
@@ -45,26 +45,27 @@
 <PRE>
   use Device::Modem;</PRE>
 <PRE>
-  my $modem = new Device::Modem( port =&gt; '/dev/ttyS1', baud =&gt; 9600 )</PRE>
+  my $modem = new Device::Modem( port =&gt; '/dev/ttyS1' )</PRE>
 <PRE>
-  if( $modem-&gt;connect() ) {
+  if( $modem-&gt;connect( baudrate =&gt; 9600 ) ) {
       print &quot;connected!\n&quot;;
   } else {
       print &quot;sorry, no connection with serial port!\n';
   }</PRE>
 <PRE>
-  $modem-&gt;attention();          # send `attention' sequence (+++)
-</PRE>
+  $modem-&gt;attention();          # send `attention' sequence (+++)</PRE>
 <PRE>
-
-  $modem-&gt;dial( '022704690' );  # dial number (*NOT WORKING YET*)</PRE>
+  $modem-&gt;dial('02270469012');  # dial phone number</PRE>
 <PRE>
-
   $modem-&gt;echo(1);              # enable local echo
   $modem-&gt;echo(0);              # disable it</PRE>
 <PRE>
   $modem-&gt;offhook();            # Take off hook (ready to dial)
-  $modem-&gt;hangup();             # returns modem answer
+  $modem-&gt;hangup();             # returns modem answer</PRE>
+<PRE>
+  $modem-&gt;is_active();          # Tests whether modem device is active or not
+                                # So far it works for modem OFF/ modem ON condition</PRE>
+<PRE>
   $modem-&gt;reset();              # hangup + attention + restore setting 0 (Z0)</PRE>
 <PRE>
   $modem-&gt;restore_factory_settings();
@@ -76,12 +77,10 @@
   $modem-&gt;repeat();             # Repeat last command</PRE>
 <PRE>
   $modem-&gt;verbose(0);           # Modem responses are numerical
-  $modem-&gt;verbose(1);           # Normal text responses
-</PRE>
+  $modem-&gt;verbose(1);           # Normal text responses</PRE>
 <PRE>
-
   #
-  # Some raw at commands
+  # Some raw AT commands
   #
   $modem-&gt;atsend( 'ATH0' );
   print $modem-&gt;answer();</PRE>
@@ -91,9 +90,8 @@
 <P>
 <HR>
 <H1><A NAME="description">DESCRIPTION</A></H1>
-<P>Device::Modem class implements basic AT device abstraction. It is meant
-to be inherited by sub classes (as Device::Gsm), which are
-based on serial connections.</P>
+<P>Device::Modem class implements basic AT (Hayes) compliant device abstraction. It is meant
+to be inherited by sub classes (as Device::Gsm), which are based on serial connections.</P>
 <P>
 <H2><A NAME="requires">REQUIRES</A></H2>
 <DL>
@@ -108,7 +106,7 @@ based on serial connections.</P>
 <H1><A NAME="todo">TO-DO</A></H1>
 <UL>
 <LI>
-Logging mechanism
+Document log interface
 <P>Explain which type of logging hooks you can use with Device::Modem
 and its sub-classes (Device::Gsm). For now, they are only `file'
 and `syslog'</P>
@@ -121,9 +119,7 @@ current device, with list of supported commands, and database
 of brand/model-specific commands</P>
 <P></P>
 <LI>
-Time::HiRes
-<P>Check if Time::HiRes module is installed and use it
-to wait milliseconds instead of whole seconds</P>
+Test `parse_answer()' method
 <P></P>
 <LI>
 Many more to come!
@@ -135,12 +131,15 @@ Many more to come!
 <P>
 <HR>
 <H1><A NAME="copyright">COPYRIGHT</A></H1>
+<P>(C) 2002 Cosimo Streppone, <EM><A HREF="mailto:cosimo@cpan.org">cosimo@cpan.org</A></EM></P>
 <P>This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.</P>
 <P>
 <HR>
 <H1><A NAME="see also">SEE ALSO</A></H1>
-<P><A HREF="/Device/SerialPort.html">the Device::SerialPort manpage</A>, <A HREF="/Win32/SerialPort.html">the Win32::SerialPort manpage</A>, <EM>perl</EM>.</P>
+<P>Device::SerialPort,
+Win32::SerialPort,
+perl</P>
 
 </BODY>
 

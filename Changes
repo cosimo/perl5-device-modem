@@ -25,3 +25,11 @@ Revision history for Perl extension Device::Modem.
 1.10  Wed Apr 10 00:11:35 CEST 2002
 	- modified docs, license details
 	- fixed wrong hangup() call
+
+1.14  Mon Jun 03 21:53:05 CEST 2002
+        - added is_active() method to test if modem ... (guess :-)
+        - tested, now seems to work, dial() method
+        - fixed a *bad* bug in modem answer parsing routine
+        - better timing and less waits in AT commands
+        - moved "PRE-ALPHA" to "ALPHA" :-)
+
