@@ -20,7 +20,7 @@ SYNOPSIS
 
       $modem->attention();          # send `attention' sequence (+++)
  
-      $modem->disl( '022704690' );  # dial number (*NOT WORKING YET*)
+      $modem->dial( '022704690' );  # dial number (*NOT WORKING YET*)
  
       $modem->echo(1);              # enable local echo
       $modem->echo(0);              # disable it

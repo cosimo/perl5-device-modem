@@ -23,10 +23,10 @@
 # support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.6 2002-04-03 20:02:37 cosimo Exp $
+# $Id: Modem.pm,v 1.7 2002-04-03 20:03:50 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.6 $ =~ /(\d)\.(\d+)/; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.7 $ =~ /(\d)\.(\d+)/; 
 
 use strict;
 use Device::SerialPort;
@@ -380,7 +380,7 @@ Device::Modem - Perl extension to talk to AT devices connected via serial port
 
   $modem->attention();          # send `attention' sequence (+++)
  
-  $modem->disl( '022704690' );  # dial number (*NOT WORKING YET*)
+  $modem->dial( '022704690' );  # dial number (*NOT WORKING YET*)
  
   $modem->echo(1);              # enable local echo
   $modem->echo(0);              # disable it
