@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.25 2003-05-18 14:48:55 cosimo Exp $
+# $Id: Modem.pm,v 1.26 2003-05-18 15:18:04 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.25 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.26 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -89,13 +89,23 @@ sub new {
 
 	# Force logging to file if this is windoze and user requested syslog mechanism
 	$aOpt{'log'} = 'file' if( $aOpt{'ostype'} eq 'windoze' && $aOpt{'log'} =~ /syslog/i );
+	$aOpt{'loglevel'} ||= 'warn';
 
-	my($method, @options) = split ',', delete $aOpt{'log'};
-	my $logclass = 'Device/Modem/Log/'.ucfirst(lc $method).'.pm';
-	my $package = 'Device::Modem::Log::'.ucfirst lc $method;
-	eval { require $logclass; };
-	unless($@) {
-		$aOpt{'_log'} = $package->new( $class, @options );
+	if( ! ref $aOpt{'log'} ) {
+		my($method, @options) = split ',', delete $aOpt{'log'};
+		my $logclass = 'Device/Modem/Log/'.ucfirst(lc $method).'.pm';
+		my $package = 'Device::Modem::Log::'.ucfirst lc $method;
+		eval { require $logclass; };
+		unless($@) {
+			$aOpt{'_log'} = $package->new( $class, @options );
+		}
+	} else {
+		# User passed an already instanced log object
+		$aOpt{'_log'} = $aOpt{'log'};
+	}
+
+	if( ref $aOpt{'_log'} && $aOpt{'_log'}->can('loglevel') ) {
+		$aOpt{'_log'}->loglevel($aOpt{'loglevel'});
 	}
 
 	bless \%aOpt, $class;                   # Instance $class object
@@ -419,9 +429,14 @@ sub send_init_string {
 	$self->answer();
 }
 
-# returns log object reference
+# returns log object reference or nothing if it is not defined
 sub log {
-	shift()->{'_log'}
+	my $me = shift;
+	if( ref $me->{'_log'} ) {
+		return $me->{'_log'};
+	} else {
+		return {};
+	}
 }
 
 # instances (Device|Win32)::SerialPort object and initializes communications
