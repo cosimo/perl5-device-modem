@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.33 2004-01-23 00:28:25 cosimo Exp $
+# $Id: Modem.pm,v 1.34 2004-02-18 21:52:35 cosimix Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.33 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.34 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -168,7 +168,9 @@ sub dial {
 	# XXX Check response times here (timeout!)
 	my $ans = $self->answer(undef, $timeout * 1000 );
 
-	$ok = 1 if index( $ans, 'CONNECT' ) > -1;
+        if( (index($ans,'CONNECT') > -1) || (index($ans,'RING') > -1) ) {
+		$ok = 1;
+	}
 
 	# Turn on/off `CARRIER' flag
 	$self->flag('CARRIER', $ok);
