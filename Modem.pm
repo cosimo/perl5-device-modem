@@ -1,17 +1,31 @@
-# Device::Modem
 #
-# Author: Cosimo Streppone <cosimo@cpan.org>
-# Date  : 2000/10/13 (ported to CPAN in 2002)
+# Device::Modem - a Perl class to interface generic modems (AT-compliant)
+# Copyright (C) 2000-2002 Cosimo Streppone, cosimo@cpan.org
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # WARNING
-#	This is PRE-ALPHA software, still needs extensive testing and
-#   support for generic AT commads, so use it at your own risk,
-#   and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.3 2002-03-21 07:00:35 cosimo Exp $
+# This is PRE-ALPHA software, still needs extensive testing and
+# support for generic AT commads, so use it at your own risk,
+# and without ANY warranty! Have fun.
+#
+# $Id: Modem.pm,v 1.4 2002-03-25 06:47:32 cosimo Exp $
 
 package Device::Modem;
-$VERSION = substr q$Revision: 1.3 $, 10; 
+$VERSION = sprintf '%d.%02d', q$Revision: 1.4 $ =~ /(\d)\.(\d+)/; 
 
 use strict;
 use Device::SerialPort;
@@ -67,11 +81,13 @@ sub new {
 sub attention {
 	my $self = shift;
 
+	$self->log->write('info', 'sending attention sequence...');
+
 	# Send attention sequence
 	$self->atsend('+++');
 
 	# Wait 1000 milliseconds
-	$self->wait(1000);
+	$self->wait(500);
 
 	$self->answer();
 }
@@ -120,6 +136,24 @@ sub reset {
 	$self->reset_flags();
 
 	return $self->answer();
+}
+
+sub restore_factory_settings {
+	my $self = shift();
+
+	$self->log->write('warning', 'restoring factory settings on '.$self->{'serial'} );
+	$self->atsend( 'AT&F' . CR);
+
+	$self->answer();
+}
+
+sub verbose {
+	my($self, $lEnable) = @_;
+
+	$self->log->write( 'info', ( $lEnable ? 'enabling' : 'disabling' ) . ' verbose messages' );
+	$self->atsend( ($lEnable ? 'ATV1' : 'ATV0') . CR );
+
+	$self->answer();
 }
 
 sub wait {
@@ -319,6 +353,8 @@ sub answer {
 	$buff;
 }
 
+
+
 2703;
 
 
@@ -326,13 +362,13 @@ __END__
 
 =head1 NAME
 
-Device::Modem - Perl extension to talk to AT devices via serial ports
+Device::Modem - Perl extension to talk to AT devices connected via serial port
 
 =head1 WARNING
 
-   This is B<PRE-ALPHA> software, still needs extensive testing and
+   This is C<PRE-ALPHA> software, still needs extensive testing and
    support for generic AT commads, so use it at your own risk,
-   and without B<ANY> warranty! Have fun.
+   and without C<ANY> warranty! Have fun.
 
 =head1 SYNOPSIS
 
@@ -355,8 +391,15 @@ Device::Modem - Perl extension to talk to AT devices via serial ports
   $modem->hangup();             # returns modem answer
   $modem->reset();              # hangup + attention + restore setting 0 (Z0)
 
+  $modem->restore_factory_settings();
+                                # Handle with care!
+
   $modem->send_init_string();   # Send initialization string
                                 # Now this is fixed to `ATZ0H0V1Q0E0'
+
+  $modem->verbose(0);           # Modem responses are numerical
+  $modem->verbose(1);           # Normal text responses
+ 
   #
   # Some raw at commands
   #
