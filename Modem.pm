@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.26 2003-05-18 15:18:04 cosimo Exp $
+# $Id: Modem.pm,v 1.27 2003-05-18 15:23:10 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.26 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.27 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -1040,13 +1040,20 @@ F</dev/modem> (the default value). For Win32, C<COM1,2,3,4> can be used.
 
 =item *
 
-C<log> - this is a scalar that specifies the method and eventually the filename for logging.
+C<log> - this specifies the method and eventually the filename for logging.
 Logging process with C<Device::Modem> is controlled by B<log plugins>, stored under
 F<Device/Modem/Log/> folder. At present, there are two main plugins: C<Syslog> and C<File>.
 C<Syslog> does not work with Win32 machines.
 When using C<File> plug-in, all log information will be written to a default filename
 if you don't specify one yourself. The default is F<%WINBOOTDIR%\temp\modem.log> on
 Win32 and F</var/log/modem.log> on Unix.
+
+Also there is the possibility to pass a B<custom log object>, if this object
+provides the following C<write()> call:
+
+	$log_object->write( $loglevel, $logmessage )
+
+You can simply pass this object (already instanced) as the C<log> property.
 
 Examples:
 
@@ -1055,6 +1062,9 @@ Examples:
 
 	# Unix, custom logfile
 	my $modem = Device::Modem->new( port => '/dev/ttyS0', log => 'file,/home/neo/matrix.log' )
+
+	# With custom log object
+	my $modem = Device::modem->new( port => '/dev/ttyS0', log => My::LogObj->new() );
 
 =item *
 
