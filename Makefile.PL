@@ -1,10 +1,13 @@
-# $Id: Makefile.PL,v 1.4 2002-06-04 21:01:39 Cosimo Exp $
+# $Id: Makefile.PL,v 1.5 2002-06-05 09:51:55 Cosimo Exp $
 use ExtUtils::MakeMaker;
 
-print "\n\n", '-' x 60, "\n", ' ' x 20, 'Device::Modem setup', "\n", '-' x 60, "\n\n";
+#print "\n\n", '-' x 60, "\n", ' ' x 20, 'Device::Modem setup', "\n", '-' x 60, "\n\n";
 
 my $is_windoze = ( $^O =~ /Win/i );
-my %config = configure();
+
+#
+# my %config = configure();
+#
 
 WriteMakefile(
 	'AUTHOR'        => 'Cosimo Streppone <cosimo@cpan.org>',
@@ -55,11 +58,11 @@ HELP
 
 		$port = <STDIN>;
 		chomp $port;
-		$port = lc $port;
+		$port = lc substr $port, 0, 1;
 
 		$port = $default unless defined $port;
 
-	} until( $port =~ /[01234nm]/i );
+	} until( index( '01234nm', $port ) != -1 );
 
 	if( $port eq 'n' ) {
 		$conf{'port'} = 'NONE';
@@ -109,7 +112,7 @@ HELP
 	# Write configuration file
 	if( open CONF, '>.config.pm' ) {
 
-		print CONF "# Device::Modem setup parameters\n# \$Id: Makefile.PL,v 1.4 2002-06-04 21:01:39 Cosimo Exp $\n\n";
+		print CONF "# Device::Modem setup parameters\n# \$Id: Makefile.PL,v 1.5 2002-06-05 09:51:55 Cosimo Exp $\n\n";
 
 		foreach( sort keys %conf ) {
 			print CONF "\$Device::Modem::$_ = '$conf{$_}';\n";
