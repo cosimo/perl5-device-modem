@@ -1,5 +1,9 @@
 Revision history for Perl extension Device::Modem.
 
+1.41  Sun Sep 19 21:12:10 CET 2004
+    - little fix for correct MacOSX os detection and SerialPort inclusion
+      (thanks to Lidie Steve for reporting)
+
 1.39
 1.38
 1.37  Wed Aug 18 09:21:50 CET 2004
