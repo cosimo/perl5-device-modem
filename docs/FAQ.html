@@ -1,0 +1,149 @@
+<HTML>
+<HEAD>
+<TITLE>Device::Modem::FAQ</TITLE>
+<LINK REV="made" HREF="mailto:">
+</HEAD>
+
+<BODY>
+
+<A NAME="__index__"></A>
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#device::modem::faq">Device::Modem::FAQ</A></LI>
+	<UL>
+
+		<LI><A HREF="#what is device::modem">What is <CODE>Device::Modem</CODE>?</A></LI>
+		<LI><A HREF="#who is the author of this work">Who is the author of this work?</A></LI>
+		<LI><A HREF="#btw, what is perl">BTW, what is <EM>Perl</EM>?</A></LI>
+		<LI><A HREF="#what is an at command set">What is an <CODE>AT command set</CODE>?</A></LI>
+		<LI><A HREF="#what is a modem">What is a modem?</A></LI>
+		<LI><A HREF="#what are the requisites of device::modem">What are the requisites of <CODE>Device::Modem</CODE>?</A></LI>
+		<LI><A HREF="#is it multiplatform">Is it multi-platform?</A></LI>
+		<LI><A HREF="#can i use it for my commercial application">Can I use it for my commercial application?</A></LI>
+		<LI><A HREF="#why the [insert_you_preferred_feature_here] does not work">Why the [insert_you_preferred_feature_here] does not work?</A></LI>
+		<LI><A HREF="#can i make a [insert_your_preferred_number_here] euro donation to you for this fantastic module">Can I make a [insert_your_preferred_number_here] euro donation to you for this fantastic module?</A></LI>
+		<LI><A HREF="#i think you are a #!x$*z!#(!* and your software sucks">I think you are a ?#!x$*z!#(!* and your software sucks</A></LI>
+	</UL>
+
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="device::modem::faq">Device::Modem::FAQ</A></H1>
+<P>This is a Frequently Asked Questions list about <CODE>Device::Modem</CODE> perl extension.</P>
+<P>
+<H2><A NAME="what is device::modem">What is <CODE>Device::Modem</CODE>?</A></H2>
+<P><CODE>Device::Modem</CODE> is a <EM>perl</EM> extension written in pure perl that allows to
+communicate with modems, or generically with <CODE>AT command set compliant</CODE> devices
+connected to your computer via a <STRONG>serial port</STRONG>.</P>
+<P>
+<H2><A NAME="who is the author of this work">Who is the author of this work?</A></H2>
+<P>Cosimo Streppone (<EM><A HREF="mailto:cosimo@cpan.org">cosimo@cpan.org</A></EM>), an italian guy who works and
+enjoys writing perl programs and objects. If you want to know more,
+go to <A HREF="http://www.streppone.it/cosimo/">http://www.streppone.it/cosimo/</A></P>
+<P>
+<H2><A NAME="btw, what is perl">BTW, what is <EM>Perl</EM>?</A></H2>
+<P>If you are asking that, probably you are in the wrong place.</P>
+<P><EM>Perl</EM> is a wonderful programming language, that cuts development times, helps
+developer keep mental health, good life-style, doesn't pollute developer's mind,
+allows complete freedom of style, and (from perl manual), <EM>gives you enough
+rope to hang yourself</EM>.</P>
+<P>Some starting points:</P>
+<UL>
+<LI>
+<A HREF="http://www.perl.com">http://www.perl.com</A> - Reference site for Perl programmers
+<P></P>
+<LI>
+<A HREF="http://www.perl.org">http://www.perl.org</A> - Perl Mongers home
+<P></P>
+<LI>
+<A HREF="http://cpan.perl.org">http://cpan.perl.org</A> - Comprehensive Perl Archive Network
+<P></P>
+<LI>
+<A HREF="http://www.perlmonks.org">http://www.perlmonks.org</A> - Higher Perl souls
+<P></P>
+<LI>
+<A HREF="http://use.perl.org">http://use.perl.org</A> - Large Perl community
+<P></P></UL>
+<P>
+<H2><A NAME="what is an at command set">What is an <CODE>AT command set</CODE>?</A></H2>
+<P>It is a set of standard commands, also called <CODE>Hayes</CODE>, in which
+(almost) all commands begin with <CODE>AT</CODE> prefix and they allow to control
+a modem, router, whatever device. Also cellular phones work with
+a subset of standard <CODE>AT</CODE> commands.</P>
+<P>
+<H2><A NAME="what is a modem">What is a modem?</A></H2>
+<P>What the heck are you doing here? <A HREF="http://www.google.com/search?q=Tech+glossary+modem">http://www.google.com/search?q=Tech+glossary+modem</A></P>
+<P>
+<H2><A NAME="what are the requisites of device::modem">What are the requisites of <CODE>Device::Modem</CODE>?</A></H2>
+<P>You must have:</P>
+<UL>
+<LI>
+A working computer with a standard RS-232 serial port
+<P></P>
+<LI>
+An AT-compliant device (a modem will do perfectly here :-)
+<P></P>
+<LI>
+A working Perl installation
+<P></P>
+<LI>
+<CODE>Device::SerialPort</CODE> module installed if you are on some unix platform.
+<CODE>Win32::SerialPort</CODE> module installed if you are on Win32 platform.
+<P></P></UL>
+<P>
+<H2><A NAME="is it multiplatform">Is it multi-platform?</A></H2>
+<P><CODE>Device::Modem</CODE> works close to the serial port communication layer,
+which varies on many platforms. It relies on <CODE>Device::SerialPort</CODE> and
+<CODE>Win32::SerialPort</CODE> modules for all low-level communication layer.</P>
+<P>It tries to build a platform independent layer above these two low-level
+modules, so developers don't need to distinguish among different platforms.</P>
+<P>It's been reported to work on <CODE>Win32</CODE>, <CODE>Linux</CODE>, <CODE>FreeBSD</CODE>, <CODE>NetBSD</CODE>,
+<CODE>OpenBSD</CODE>, <CODE>ARM-Linux</CODE> and <CODE>Solaris</CODE>.</P>
+<P>
+<H2><A NAME="can i use it for my commercial application">Can I use it for my commercial application?</A></H2>
+<P>Yes, it is allowed by its license, that is the same as Perl language.
+If you are using it in a commercial package, or plan to do so, please
+inform the author (Cosimo Streppone, <EM><A HREF="mailto:cosimo@cpan.org">cosimo@cpan.org</A></EM>).
+Thank you.</P>
+<P>
+<H2><A NAME="why the [insert_you_preferred_feature_here] does not work">Why the [insert_you_preferred_feature_here] does not work?</A></H2>
+<P>This is an open-source software developed in my little home spare time and
+for my personal interest and amusement. This module has a test suite, but it
+is not very extensive, so it is possible that some feature X does not work,
+or it is not implemented yet or I cannot test it.</P>
+<P>If you are in this situation, please contact <EM>me</EM>
+and provide the following information:</P>
+<UL>
+<LI>
+Your operating system version and architecture.
+Complete output of <CODE>perl -V</CODE> command is good for this.
+<P></P>
+<LI>
+Your perl version.
+Again <CODE>perl -V</CODE>.
+<P></P>
+<LI>
+Your <CODE>Device::Modem</CODE>, <CODE>Device::SerialPort</CODE> and (if you are using it)
+<CODE>Device::Gsm</CODE> version.
+In case of doubt, send the output of:
+<PRE>
+        perl -MDevice::Modem -le 'print Device::Modem-&gt;VERSION'</PRE>
+<P></P></UL>
+<P>Thank you.</P>
+<P>
+<H2><A NAME="can i make a [insert_your_preferred_number_here] euro donation to you for this fantastic module">Can I make a [insert_your_preferred_number_here] euro donation to you for this fantastic module?</A></H2>
+<P>Oh, yes!
+Please feel free to contact <EM><A HREF="mailto:cosimo@cpan.org">cosimo@cpan.org</A></EM> to decide details about this... :-)</P>
+<P>
+<H2><A NAME="i think you are a #!x$*z!#(!* and your software sucks">I think you are a ?#!x$*z!#(!* and your software sucks</A></H2>
+<P>Uh.</P>
+<P>Please contact me, so I can improve my software design, ideas and coding,
+but only if you explain the reasons of your criticism. Thank you.</P>
+
+</BODY>
+
+</HTML>

@@ -1,5 +1,4 @@
 Modem.pm
-Modem.html
 Changes
 MANIFEST
 Makefile.PL
@@ -10,4 +9,6 @@ lib/Device/Modem/Log/Syslog.pm
 examples/shell.pl
 examples/dial.pl
 examples/active.pl
-
+docs/Modem.html
+docs/FAQ.pod
+docs/FAQ.html

@@ -1,0 +1,591 @@
+<HTML>
+<HEAD>
+<TITLE>Device::Modem - Perl extension to talk to modem devices connected via serial port</TITLE>
+<LINK REV="made" HREF="mailto:">
+</HEAD>
+
+<BODY>
+
+<A NAME="__index__"></A>
+<!-- INDEX BEGIN -->
+
+<UL>
+
+	<LI><A HREF="#name">NAME</A></LI>
+	<LI><A HREF="#warning">WARNING</A></LI>
+	<LI><A HREF="#synopsis">SYNOPSIS</A></LI>
+	<LI><A HREF="#description">DESCRIPTION</A></LI>
+	<UL>
+
+		<LI><A HREF="#things device::modem can do">Things <CODE>Device::Modem</CODE> can do</A></LI>
+		<LI><A HREF="#things device::modem can't do yet">Things <CODE>Device::Modem</CODE> can't do yet</A></LI>
+		<LI><A HREF="#things it will never be able to do">Things it will never be able to do</A></LI>
+		<LI><A HREF="#examples">Examples</A></LI>
+	</UL>
+
+	<LI><A HREF="#methods">METHODS</A></LI>
+	<UL>
+
+		<LI><A HREF="#answer()"><CODE>answer()</CODE></A></LI>
+		<LI><A HREF="#atsend()"><CODE>atsend()</CODE></A></LI>
+		<LI><A HREF="#attention()"><CODE>attention()</CODE></A></LI>
+		<LI><A HREF="#connect()"><CODE>connect()</CODE></A></LI>
+		<LI><A HREF="#dial()"><CODE>dial()</CODE></A></LI>
+		<LI><A HREF="#disconnect()"><CODE>disconnect()</CODE></A></LI>
+		<LI><A HREF="#echo()"><CODE>echo()</CODE></A></LI>
+		<LI><A HREF="#hangup()"><CODE>hangup()</CODE></A></LI>
+		<LI><A HREF="#is_active()"><CODE>is_active()</CODE></A></LI>
+		<LI><A HREF="#log()"><CODE>log()</CODE></A></LI>
+		<LI><A HREF="#new()"><CODE>new()</CODE></A></LI>
+		<LI><A HREF="#offhook()"><CODE>offhook()</CODE></A></LI>
+		<LI><A HREF="#parse_answer()"><CODE>parse_answer()</CODE></A></LI>
+		<LI><A HREF="#port()"><CODE>port()</CODE></A></LI>
+		<LI><A HREF="#repeat()"><CODE>repeat()</CODE></A></LI>
+		<LI><A HREF="#reset()"><CODE>reset()</CODE></A></LI>
+		<LI><A HREF="#restore_factory_settings()"><CODE>restore_factory_settings()</CODE></A></LI>
+		<LI><A HREF="#s_register()"><CODE>S_register()</CODE></A></LI>
+		<LI><A HREF="#send_init_string()"><CODE>send_init_string()</CODE></A></LI>
+		<LI><A HREF="#status()"><CODE>status()</CODE></A></LI>
+		<LI><A HREF="#store_number()"><CODE>store_number()</CODE></A></LI>
+		<LI><A HREF="#verbose()"><CODE>verbose()</CODE></A></LI>
+		<LI><A HREF="#wait()"><CODE>wait()</CODE></A></LI>
+	</UL>
+
+	<LI><A HREF="#requires">REQUIRES</A></LI>
+	<LI><A HREF="#export">EXPORT</A></LI>
+	<LI><A HREF="#todo">TO-DO</A></LI>
+	<LI><A HREF="#faq">FAQ</A></LI>
+	<LI><A HREF="#support">SUPPORT</A></LI>
+	<LI><A HREF="#author">AUTHOR</A></LI>
+	<LI><A HREF="#copyright">COPYRIGHT</A></LI>
+	<LI><A HREF="#see also">SEE ALSO</A></LI>
+</UL>
+<!-- INDEX END -->
+
+<HR>
+<P>
+<H1><A NAME="name">NAME</A></H1>
+<P>Device::Modem - Perl extension to talk to modem devices connected via serial port</P>
+<P>
+<HR>
+<H1><A NAME="warning">WARNING</A></H1>
+<P>This is <STRONG>BETA</STRONG> software, so use it at your own risk,
+and without <STRONG>ANY</STRONG> warranty! Have fun.</P>
+<P>
+<HR>
+<H1><A NAME="synopsis">SYNOPSIS</A></H1>
+<PRE>
+  use Device::Modem;</PRE>
+<PRE>
+  my $modem = new Device::Modem( port =&gt; '/dev/ttyS1' );</PRE>
+<PRE>
+  if( $modem-&gt;connect( baudrate =&gt; 9600 ) ) {
+      print &quot;connected!\n&quot;;
+  } else {
+      print &quot;sorry, no connection with serial port!\n&quot;;
+  }</PRE>
+<PRE>
+  $modem-&gt;attention();          # send `attention' sequence (+++)</PRE>
+<PRE>
+  ($ok, $answer) = $modem-&gt;dial('02270469012');  # dial phone number
+  $ok = $modem-&gt;dial(3);        # 1-digit parameter = dial number stored in memory 3</PRE>
+<PRE>
+  $modem-&gt;echo(1);              # enable local echo (0 to disable)</PRE>
+<PRE>
+  $modem-&gt;offhook();            # Take off hook (ready to dial)
+  $modem-&gt;hangup();             # returns modem answer</PRE>
+<PRE>
+  $modem-&gt;is_active();          # Tests whether modem device is active or not
+                                # So far it works for modem OFF/ modem ON condition</PRE>
+<PRE>
+  $modem-&gt;reset();              # hangup + attention + restore setting 0 (Z0)</PRE>
+<PRE>
+  $modem-&gt;restore_factory_settings();  # Handle with care!
+  $modem-&gt;restore_factory_settings(1); # Same with preset profile 1 (can be 0 or 1)</PRE>
+<PRE>
+  $modem-&gt;send_init_string();   # Send initialization string
+                                # Now this is fixed to 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &amp;C0 X4'</PRE>
+<PRE>
+  # Get/Set value of S1 register
+  my $S1 = $modem-&gt;S_register(1);
+  my $S1 = $modem-&gt;S_register(1, 55); # Don't do that if you definitely don't know!</PRE>
+<PRE>
+  # Get status of managed signals (CTS, DSR, RLSD, RING)
+  my %signal = $modem-&gt;status();
+  if( $signal{DSR} ) { print &quot;Data Set Ready signal active!\n&quot;; }</PRE>
+<PRE>
+  # Stores this number in modem memory number 3
+  $modem-&gt;store_number(3, '01005552817');</PRE>
+<PRE>
+  $modem-&gt;repeat();             # Repeat last command</PRE>
+<PRE>
+  $modem-&gt;verbose(1);           # Normal text responses (0=numeric codes)</PRE>
+<PRE>
+  # Some raw AT commands
+  $modem-&gt;atsend( 'ATH0' );
+  print $modem-&gt;answer();</PRE>
+<PRE>
+  $modem-&gt;atsend( 'ATDT01234567' . Device::Modem::CR );
+  print $modem-&gt;answer();</PRE>
+<P>
+<HR>
+<H1><A NAME="description">DESCRIPTION</A></H1>
+<P><CODE>Device::Modem</CODE> class implements basic <STRONG>AT (Hayes) compliant</STRONG> device abstraction.
+It can be inherited by sub classes (as <CODE>Device::Gsm</CODE>), which are based on serial connections.</P>
+<P>
+<H2><A NAME="things device::modem can do">Things <CODE>Device::Modem</CODE> can do</A></H2>
+<UL>
+<LI>
+connect to a modem on your serial port
+<P></P>
+<LI>
+test if the modem is alive and working
+<P></P>
+<LI>
+dial a number and connect to a remote modem
+<P></P>
+<LI>
+work with registers and settings of the modem
+<P></P>
+<LI>
+issue standard or arbitrary <CODE>AT</CODE> commands, getting results from modem
+<P></P></UL>
+<P>
+<H2><A NAME="things device::modem can't do yet">Things <CODE>Device::Modem</CODE> can't do yet</A></H2>
+<UL>
+<LI>
+Transfer a file to a remote modem
+<P></P>
+<LI>
+Control a terminal-like (or a PPP) connection. This should really not
+be very hard to do anyway.
+<P></P>
+<LI>
+Many others...
+<P></P></UL>
+<P>
+<H2><A NAME="things it will never be able to do">Things it will never be able to do</A></H2>
+<UL>
+<LI>
+Coffee :-)
+<P></P></UL>
+<P>
+<H2><A NAME="examples">Examples</A></H2>
+<P>In the `examples' directory, there are some scripts that should work without big problems,
+that you can take as (yea) examples:</P>
+<DL>
+<DT><STRONG><A NAME="item_%60examples%2Factive%2Epl%27">`examples/active.pl'</A></STRONG><BR>
+<DD>
+Tests if modem is alive
+<P></P>
+<DT><STRONG><A NAME="item_%60examples%2Fdial%2Epl%27">`examples/dial.pl'</A></STRONG><BR>
+<DD>
+Dials a phone number and display result of call
+<P></P>
+<DT><STRONG><A NAME="item_%60examples%2Fshell%2Epl%27">`examples/shell.pl'</A></STRONG><BR>
+<DD>
+(Very) poor man's minicom/hyperterminal utility
+<P></P></DL>
+<P>
+<HR>
+<H1><A NAME="methods">METHODS</A></H1>
+<P>
+<H2><A NAME="answer()"><CODE>answer()</CODE></A></H2>
+<P>One of the most used methods, waits for an answer from the device. It waits until
+$timeout (seconds) is reached (but don't rely on this time to be very correct) or until an
+expected string is encountered. Example:</P>
+<PRE>
+        $answer = $modem-&gt;answer( [$expect [, $timeout]] )</PRE>
+<P>Returns <CODE>$answer</CODE> that is the string received from modem stripped of all
+<STRONG>Carriage Return</STRONG> and <STRONG>Line Feed</STRONG> chars <STRONG>only</STRONG> at the beginning and at the end of the
+string. No in-between <STRONG>CR+LF</STRONG> are stripped.</P>
+<P>Parameters:</P>
+<UL>
+<LI>
+<CODE>$expect</CODE> - Can be a regexp compiled with <CODE>qr</CODE> or a simple substring. Input coming from the
+modem is matched against this parameter. If input matches, result is returned.
+<P></P>
+<LI>
+<CODE>$timeout</CODE> - Expressed in seconds. After that time, answer returns result also if nothing
+has been received. Example: <CODE>10</CODE>. Default: <CODE>0.2</CODE>
+<P></P></UL>
+<P>
+<H2><A NAME="atsend()"><CODE>atsend()</CODE></A></H2>
+<P>Sends a raw <CODE>AT</CODE> command to the device connected. Note that this method is most used
+internally, but can be also used to send your own custom commands. Example:</P>
+<PRE>
+        $ok = $modem-&gt;atsend( $msg )</PRE>
+<P>The only parameter is <CODE>$msg</CODE>, that is the raw AT command to be sent to
+modem expressed as string. You must include the <CODE>AT</CODE> prefix and final
+<STRONG>Carriage Return</STRONG> and/or <STRONG>Line Feed</STRONG> manually. There is the special constant
+<CODE>CR</CODE> that can be used to include such a char sequence into the at command.</P>
+<P>Returns <CODE>$ok</CODE> flag that is true if all characters are sent successfully, false
+otherwise.</P>
+<P>Example:</P>
+<PRE>
+        # Enable verbose messages
+        $modem-&gt;atsend( 'AT V1' . Device::Modem::CR );</PRE>
+<PRE>
+        # The same as:
+        $modem-&gt;verbose(1);</PRE>
+<P>
+<H2><A NAME="attention()"><CODE>attention()</CODE></A></H2>
+<P>This command sends an <STRONG>attention</STRONG> sequence to modem. This allows modem
+to pass in <STRONG>command state</STRONG> and accept <STRONG>AT</STRONG> commands. Example:</P>
+<PRE>
+        $ok = $modem-&gt;attention()</PRE>
+<P>
+<H2><A NAME="connect()"><CODE>connect()</CODE></A></H2>
+<P>Connects <CODE>Device::Modem</CODE> object to the specified serial port.
+There are options (the same options that <CODE>Device::SerialPort</CODE> has) to control
+the parameters associated to serial link. Example:</P>
+<PRE>
+        $ok = $modem-&gt;connect( [%options] )</PRE>
+<P>List of allowed options follows:</P>
+<DL>
+<DT><STRONG><A NAME="item_baudrate"><CODE>baudrate</CODE></A></STRONG><BR>
+<DD>
+Controls the speed of serial communications. The default is <STRONG>19200</STRONG> baud, that should
+be supported by all modern modems. However, here you can supply a custom value.
+Common speed values: 300, 1200, 2400, 4800, 9600, 19200, 38400, 57600,
+115200.
+This parameter is handled directly by <CODE>Device::SerialPort</CODE> object.
+<P></P>
+<DT><STRONG><A NAME="item_databits"><CODE>databits</CODE></A></STRONG><BR>
+<DD>
+This tells how many bits your data word is composed of.
+Default (and most common setting) is <CODE>8</CODE>.
+This parameter is handled directly by <CODE>Device::SerialPort</CODE> object.
+<P></P>
+<DT><STRONG><A NAME="item_init_string"><CODE>init_string</CODE></A></STRONG><BR>
+<DD>
+Custom initialization string can be supplied instead of the built-in one, that is the
+following: <CODE>H0 Z S7=45 S0=0 Q0 V1 E0 &amp;C0 X4</CODE>, that is taken shamelessly from
+<CODE>minicom</CODE> utility, I think.
+<P></P>
+<DT><STRONG><A NAME="item_parity"><CODE>parity</CODE></A></STRONG><BR>
+<DD>
+Controls how parity bit is generated and checked.
+Can be <STRONG>even</STRONG>, <STRONG>odd</STRONG> or <STRONG>none</STRONG>. Default is <STRONG>none</STRONG>.
+This parameter is handled directly by <CODE>Device::SerialPort</CODE> object.
+<P></P>
+<DT><STRONG><A NAME="item_stopbits"><CODE>stopbits</CODE></A></STRONG><BR>
+<DD>
+Tells how many bits are used to identify the end of a data word.
+Default (and most common usage) is <CODE>1</CODE>.
+This parameter is handled directly by <CODE>Device::SerialPort</CODE> object.
+<P></P></DL>
+<P>
+<H2><A NAME="dial()"><CODE>dial()</CODE></A></H2>
+<P>Takes the modem off hook, dials the specified number and returns modem answer.
+Usage:</P>
+<PRE>
+        # Simple usage (timeout is optional)
+        $ok = $modem-&gt;dial( $number [,$timeout] )</PRE>
+<PRE>
+        # List context: allows to get at exact modem answer
+        # like `CONNECT 19200/...', `BUSY', `NO CARRIER', ...
+        ($ok, $answer) = $modem-&gt;dial( $number [,$timeout] )</PRE>
+<P>If called in <STRONG>scalar context</STRONG>, returns only success of connection. If modem answer
+contains <CODE>CONNECT</CODE> string, <CODE>dial()</CODE> returns successful state, else false value
+is returned.</P>
+<P>If called in <STRONG>list context</STRONG>, returns the same <CODE>$ok</CODE> flag, but also the exact
+modem answer to the dial operation in the <CODE>$answer</CODE> scalar. <CODE>$answer</CODE> typically
+can contain strings like <CODE>CONNECT 19200</CODE> or <CODE>NO CARRIER</CODE>, <CODE>BUSY</CODE>, ... all standard
+modem answers to a dial command.</P>
+<P>Parameters are:</P>
+<UL>
+<LI>
+<CODE>$number</CODE> - this is the phone number to dial. If <CODE>$number</CODE> is only 1 digit, it is interpreted
+as: <STRONG>dial number in my address book position <CODE>$number</CODE></STRONG>. So if your code is:
+<PRE>
+        $modem-&gt;dial( 2, 10 );</PRE>
+<P>This means: dial number in the modem internal address book (see <CODE>store_number</CODE> for a way to
+read/write address book) in position number <STRONG>2</STRONG> and wait for a timeout of <STRONG>10</STRONG> seconds.</P>
+<P></P>
+<LI>
+<CODE>$timeout</CODE> - timeout expressed in seconds to wait for the remote device to answer.
+Please do not expect an <STRONG>exact</STRONG> wait for the number of seconds you specified. I'm still
+studying how to do that exactly.
+<P></P></UL>
+<P>
+<H2><A NAME="disconnect()"><CODE>disconnect()</CODE></A></H2>
+<P>Disconnects <CODE>Device::Modem</CODE> object from serial port. This method calls underlying
+<CODE>disconnect()</CODE> of <CODE>Device::SerialPort</CODE> object.
+Example:</P>
+<PRE>
+        $modem-&gt;disconnect();</PRE>
+<P>
+<H2><A NAME="echo()"><CODE>echo()</CODE></A></H2>
+<P>Enables or disables local echo of commands. This is managed automatically by <CODE>Device::Modem</CODE>
+object. Normally you should not need to worry about this. Usage:</P>
+<PRE>
+        $ok = $modem-&gt;echo( $enable )</PRE>
+<P>
+<H2><A NAME="hangup()"><CODE>hangup()</CODE></A></H2>
+<P>Does what it is supposed to do. Hang up the phone thus terminating any active call.
+Usage:</P>
+<PRE>
+        $ok = $modem-&gt;hangup();</PRE>
+<P>
+<H2><A NAME="is_active()"><CODE>is_active()</CODE></A></H2>
+<P>Can be used to check if there is a modem attached to your computer.
+If modem is alive and responding (on serial link, not to a remote call),
+<CODE>is_active()</CODE> returns true (1), otherwise returns false (0).
+Example:</P>
+<PRE>
+        if( $modem-&gt;is_active() ) {
+                # Ok!
+        } else {
+                # Modem turned off?
+        }</PRE>
+<P>
+<H2><A NAME="log()"><CODE>log()</CODE></A></H2>
+<P>Simple accessor to log object instanced at object creation time.
+Used internally. If you want to know the gory details, see <CODE>Device::Modem::Log::*</CODE> objects.
+You can also see the <STRONG>examples</STRONG> for how to log something without knowing
+all the gory details.</P>
+<P><TABLE CELLSPACING=0 CELLPADDING=0><TR><TD>Hint:
+<TR><TD><TD>$modem-&gt;log-&gt;write('warn', 'ok, my log message here');</TABLE></P>
+<P>
+<H2><A NAME="new()"><CODE>new()</CODE></A></H2>
+<P><CODE>Device::Modem</CODE> constructor. This takes several options. A basic example:</P>
+<PRE>
+        my $modem = Device::Modem-&gt;new( port =&gt; '/dev/ttyS0' );</PRE>
+<P>if under Linux or some kind of unix machine, or</P>
+<PRE>
+        my $modem = Device::Modem-&gt;new( port =&gt; 'COM1' );</PRE>
+<P>if you are using a Win32 machine.</P>
+<P>This builds the <CODE>Device::Modem</CODE> object with all the default parameters.
+This should be fairly usable if you want to connect to a real modem.
+Note that I'm testing it with a <STRONG>3Com US Robotics 56K Message</STRONG> modem
+at <STRONG>19200</STRONG> baud and works ok.</P>
+<P>List of allowed options:</P>
+<UL>
+<LI>
+<CODE>port</CODE> - serial port to connect to. On Unix, can be also a convenient link as
+<EM>/dev/modem</EM> (the default value). For Win32, <CODE>COM1,2,3,4</CODE> can be used.
+<P></P>
+<LI>
+<CODE>log</CODE> - this is a scalar that specifies the method and eventually the filename for logging.
+Logging process with <CODE>Device::Modem</CODE> is controlled by <STRONG>log plugins</STRONG>, stored under
+<EM>Device/Modem/Log/</EM> folder. At present, there are two main plugins: <CODE>Syslog</CODE> and <CODE>File</CODE>.
+<CODE>Syslog</CODE> does not work with Win32 machines.
+When using <CODE>File</CODE> plug-in, all log information will be written to a default filename
+if you don't specify one yourself. The default is <EM>%WINBOOTDIR%\temp\modem.log</EM> on
+Win32 and <EM>/var/log/modem.log</EM> on Unix.
+<P>Examples:</P>
+<PRE>
+        # For Win32, default is to log in &quot;%WINBOOTDIR%/temp/modem.log&quot; file
+        my $modem = Device::Modem-&gt;new( port =&gt; 'COM1' );</PRE>
+<PRE>
+        # Unix, custom logfile
+        my $modem = Device::Modem-&gt;new( port =&gt; '/dev/ttyS0', log =&gt; 'file,/home/neo/matrix.log' )</PRE>
+<P></P>
+<LI>
+<CODE>loglevel</CODE> - default logging level. One of (order of decrescent verbosity): <CODE>debug</CODE>,
+<CODE>verbose</CODE>, <CODE>info</CODE>, <CODE>warn</CODE>, <CODE>error</CODE>, <CODE>crit</CODE>.
+<P></P></UL>
+<P>
+<H2><A NAME="offhook()"><CODE>offhook()</CODE></A></H2>
+<P>Takes the modem ``off hook'', ready to dial. Normally you don't need to use this.
+Also <CODE>dial()</CODE> goes automatically off hook before dialing.</P>
+<P>
+<H2><A NAME="parse_answer()"><CODE>parse_answer()</CODE></A></H2>
+<P>This method works like <CODE>answer()</CODE>, it accepts the same parameters, but it
+does not return the raw modem answer. Instead, it returns the answer string
+stripped of all <STRONG>CR</STRONG>/<STRONG>LF</STRONG> characters at the beginning <STRONG>and</STRONG> at the end.</P>
+<P><CODE>parse_answer()</CODE> is meant as an easy way of extracting result code
+(<CODE>OK</CODE>, <CODE>ERROR</CODE>, ...) and information strings that can be sent by modem
+in response to specific commands. Example:</P>
+<PRE>
+        &gt; AT xSHOW_MODELx&lt;CR&gt;
+        US Robotics 56K Message
+        OK
+        &gt;</PRE>
+<P>In this example, <CODE>OK</CODE> is the result and <CODE>US Robotics 56K Message</CODE> is the
+informational message.</P>
+<P>In fact, another difference with <CODE>answer()</CODE> is in the return value(s).
+Here are some examples:</P>
+<PRE>
+        $modem-&gt;atsend( '?my_at_command?' );
+        $answer = $modem-&gt;parse_answer();</PRE>
+<P>where <CODE>$answer</CODE> is the complete response string, or:</P>
+<PRE>
+        ($result, @lines) = $modem-&gt;parse_answer();</PRE>
+<P>where <CODE>$result</CODE> is the <CODE>OK</CODE> or <CODE>ERROR</CODE> final message and <CODE>@lines</CODE> is
+the array of information messages (one or more lines). For the <EM>model</EM> example,
+<CODE>$result</CODE> would hold ``<CODE>OK</CODE>'' and <CODE>@lines</CODE> would consist of only 1 line with
+the string ``<CODE>US Robotics 56K Message</CODE>''.</P>
+<P>
+<H2><A NAME="port()"><CODE>port()</CODE></A></H2>
+<P>Used internally. Accesses the <CODE>Device::SerialPort</CODE> underlying object. If you need to
+experiment or do low-level serial calls, you may want to access this. Please report
+any usage of this kind, because probably (?) it is possible to include it in a higher
+level method.</P>
+<P>
+<H2><A NAME="repeat()"><CODE>repeat()</CODE></A></H2>
+<P>Repeats the last <CODE>AT</CODE> command issued.
+Usage:</P>
+<PRE>
+        $ok = $modem-&gt;repeat()</PRE>
+<P>
+<H2><A NAME="reset()"><CODE>reset()</CODE></A></H2>
+<P>Tries in any possible way to reset the modem to the starting state, hanging up all
+active calls, resending the initialization string and preparing to receive <CODE>AT</CODE>
+commands.</P>
+<P>
+<H2><A NAME="restore_factory_settings()"><CODE>restore_factory_settings()</CODE></A></H2>
+<P>Restores the modem default factory settings. There are normally two main ``profiles'',
+two different memories for all modem settings, so you can load profile 0 and profile 1,
+that can be different depending on your modem manufacturer.</P>
+<P>Usage:</P>
+<PRE>
+        $ok = $modem-&gt;restore_factory_settings( [$profile] )</PRE>
+<P>If no <CODE>$profile</CODE> is supplied, <CODE>0</CODE> is assumed as default value.</P>
+<P>Check on your modem hardware manual for the meaning of these <STRONG>profiles</STRONG>.</P>
+<P>
+<H2><A NAME="s_register()"><CODE>S_register()</CODE></A></H2>
+<P>Gets or sets an <STRONG>S register</STRONG> value. These are some internal modem registers that
+hold important information that controls all modem behaviour. If you don't know
+what you are doing, don't use this method. Usage:</P>
+<PRE>
+        $value = $modem-&gt;S_register( $reg_number [, $new_value] );</PRE>
+<P><CODE>$reg_number</CODE> ranges from 0 to 99 (sure?).
+If no <CODE>$new_value</CODE> is supplied, return value is the current register value.
+If a <CODE>$new_value</CODE> is supplied (you want to set the register value), return value
+is the new value or <CODE>undef</CODE> if there was an error setting the new value.</P>
+<P>&lt;!-- Qui &amp;egrave; spiegata da cani --&gt;</P>
+<P>Examples:</P>
+<PRE>
+        # Get value of S7 register
+        $modem-&gt;S_register(7);</PRE>
+<PRE>
+        # Set value of S0 register to 0
+        $modem-&gt;S_register(0, 0);</PRE>
+<P>
+<H2><A NAME="send_init_string()"><CODE>send_init_string()</CODE></A></H2>
+<P>Sends the initialization string to the connected modem. Usage:</P>
+<PRE>
+        $ok = $modem-&gt;send_init_string( [$init_string] );</PRE>
+<P>If you specified an <A HREF="#item_init_string"><CODE>init_string</CODE></A> as an option to <CODE>new()</CODE> object constructor,
+that is taken by default to initialize the modem.
+Else you can specify <CODE>$init_string</CODE> parameter to use your own custom intialization
+string. Be careful!</P>
+<P>
+<H2><A NAME="status()"><CODE>status()</CODE></A></H2>
+<P>Returns status of main modem signals as managed by <CODE>Device::SerialPort</CODE> (or <CODE>Win32::SerialPort</CODE>) objects.
+The signals reported are:</P>
+<DL>
+<DT><STRONG><A NAME="item_CTS">CTS</A></STRONG><BR>
+<DD>
+Clear to send
+<P></P>
+<DT><STRONG><A NAME="item_DSR">DSR</A></STRONG><BR>
+<DD>
+Data set ready
+<P></P>
+<DT><STRONG><A NAME="item_RING">RING</A></STRONG><BR>
+<DD>
+Active if modem is ringing
+<P></P>
+<DT><STRONG><A NAME="item_RLSD">RLSD</A></STRONG><BR>
+<DD>
+??? Released line ???
+<P></P></DL>
+<P>Return value of <CODE>status()</CODE> call is a hash, where each key is a signal name and
+each value is &gt; 0 if signal is active, 0 otherwise.
+Usage:</P>
+<PRE>
+        ...
+        my %sig = $modem-&gt;status();
+        for ('CTS','DSR','RING','RLSD') {
+                print &quot;Signal $_ is &quot;, ($sig{$_} &gt; 0 ? 'on' : 'off'), &quot;\n&quot;;
+        }</PRE>
+<P>
+<H2><A NAME="store_number()"><CODE>store_number()</CODE></A></H2>
+<P>Store telephone number in modem internal address book, to be dialed later (see <CODE>dial()</CODE> method).
+Usage:</P>
+<PRE>
+        $ok = $modem-&gt;store_number( $position, $number )</PRE>
+<P>where <CODE>$position</CODE> is the address book memory slot to store phone number (usually from 0 to 9),
+and <CODE>$number</CODE> is the number to be stored in the slot.
+Return value is true if operation was successful, false otherwise.</P>
+<P>
+<H2><A NAME="verbose()"><CODE>verbose()</CODE></A></H2>
+<P>Enables or disables verbose messages. This is managed automatically by <CODE>Device::Modem</CODE>
+object. Normally you should not need to worry about this. Usage:</P>
+<PRE>
+        $ok = $modem-&gt;verbose( $enable )</PRE>
+<P>
+<H2><A NAME="wait()"><CODE>wait()</CODE></A></H2>
+<P>Waits (yea) for a given amount of time (in milliseconds). Usage:</P>
+<PRE>
+        $modem-&gt;wait( [$msecs] )</PRE>
+<P>Wait is implemented via <CODE>select</CODE> system call.
+Don't know if this is really a problem on some platforms.</P>
+<P>
+<HR>
+<H1><A NAME="requires">REQUIRES</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_SerialPort">Device::SerialPort (Win32::SerialPort for Win32 machines)</A></STRONG><BR>
+<DD>
+</DL>
+<P>
+<HR>
+<H1><A NAME="export">EXPORT</A></H1>
+<P>None</P>
+<P>
+<HR>
+<H1><A NAME="todo">TO-DO</A></H1>
+<DL>
+<DT><STRONG><A NAME="item_AutoScan">AutoScan</A></STRONG><BR>
+<DD>
+An AT command script with all interesting commands is run
+when `autoscan' is invoked, creating a `profile' of the
+current device, with list of supported commands, and database
+of brand/model-specific commands
+<P></P>
+<DT><STRONG><A NAME="item_Serial_speed_autodetect">Serial speed autodetect</A></STRONG><BR>
+<DD>
+Now if you connect to a different baud rate than that of your modem,
+probably you will get no response at all. It would be nice if <CODE>Device::Modem</CODE>
+could auto-detect the speed to correctly connect at your modem.
+<P></P>
+<DT><STRONG><A NAME="item_File_transfers">File transfers</A></STRONG><BR>
+<DD>
+It would be nice to implement <CODE>[xyz]modem</CODE> like transfers between
+two <CODE>Device::Modem</CODE> objects connected with two modems.
+<P></P></DL>
+<P>
+<HR>
+<H1><A NAME="faq">FAQ</A></H1>
+<P>There is a minimal FAQ document for this module online at
+<A HREF="http://www.streppone.it/cosimo/work/perl/CPAN/Device-Modem/FAQ.html">http://www.streppone.it/cosimo/work/perl/CPAN/Device-Modem/FAQ.html</A></P>
+<P>
+<HR>
+<H1><A NAME="support">SUPPORT</A></H1>
+<P>Please feel free to contact me at my e-mail address <EM><A HREF="mailto:cosimo@cpan.org">cosimo@cpan.org</A></EM>
+for any information, to resolve problems you can encounter with this module
+or for any kind of commercial support you may need.</P>
+<P>
+<HR>
+<H1><A NAME="author">AUTHOR</A></H1>
+<P>Cosimo Streppone, <EM><A HREF="mailto:cosimo@cpan.org">cosimo@cpan.org</A></EM></P>
+<P>
+<HR>
+<H1><A NAME="copyright">COPYRIGHT</A></H1>
+<P>(C) 2002-2003 Cosimo Streppone, <EM><A HREF="mailto:cosimo@cpan.org">cosimo@cpan.org</A></EM></P>
+<P>This library is free software; you can only redistribute it and/or
+modify it under the same terms as Perl itself.</P>
+<P>
+<HR>
+<H1><A NAME="see also">SEE ALSO</A></H1>
+<P>Device::SerialPort,
+Win32::SerialPort,
+Device::Gsm,
+perl</P>
+
+</BODY>
+
+</HTML>
