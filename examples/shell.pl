@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+#
+# $Id: shell.pl,v 1.2 2002-03-25 06:44:15 cosimo Exp $
+#
 
 use strict;
 use Device::Modem;
