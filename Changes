@@ -1,5 +1,14 @@
 Revision history for Perl extension Device::Modem.
 
+1.29
+1.30  Sat Nov  8 18:23:02 CET 2003
+    - improved answer() method speed. Now it runs sensibly faster, but needs
+	  explicit timeout parameter if you want to wait for answers (dialing
+	  a remote modem, for example)
+	- implemented a basic xmodem file transfer. *DON'T KNOW IF IT WORKS*
+	- documentation now stays only in docs/ folder, separate from main module
+	- now there is a way to get the raw modem answers (internal _answer() method)
+
 1.25
 1.26
 1.27
