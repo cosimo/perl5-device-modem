@@ -14,7 +14,7 @@
 # This Xmodem protocol version is indeed very alpha code,
 # probably does not work at all, so stay tuned...
 #
-# $Id: Xmodem.pm,v 1.3 2003-10-15 23:48:01 cosimo Exp $
+# $Id: Xmodem.pm,v 1.4 2003-11-08 17:29:00 cosimo Exp $
 
 package Xmodem::Constants;
 
@@ -67,7 +67,7 @@ sub new {
 
 sub is_last {
 	my $self = $_[0];
-	return $self->{'last'} == 1;
+	return $self->{'last'};
 }
 
 # Calculate checksum of current block data
@@ -404,7 +404,7 @@ sub timeouts {
 }
 
 sub _log {
-	print STDERR @_, "\n";
+	print STDERR @_, "\n" if $DEBUG
 }
 
 1;
