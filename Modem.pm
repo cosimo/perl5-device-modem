@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.27 2003-05-18 15:23:10 cosimo Exp $
+# $Id: Modem.pm,v 1.28 2003-05-20 05:46:40 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.27 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.28 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -89,7 +89,7 @@ sub new {
 
 	# Force logging to file if this is windoze and user requested syslog mechanism
 	$aOpt{'log'} = 'file' if( $aOpt{'ostype'} eq 'windoze' && $aOpt{'log'} =~ /syslog/i );
-	$aOpt{'loglevel'} ||= 'warn';
+	$aOpt{'loglevel'} ||= 'warning';
 
 	if( ! ref $aOpt{'log'} ) {
 		my($method, @options) = split ',', delete $aOpt{'log'};
@@ -354,7 +354,7 @@ sub store_number {
 
 	# Check parameters
 	unless( defined($position) && $number ) {
-		$self->log->write('warn', 'store_number() called with wrong parameters');
+		$self->log->write('warning', 'store_number() called with wrong parameters');
 		return $ok;
 	}
 
@@ -370,7 +370,7 @@ sub store_number {
 		$self->log->write('info', 'stored number ['.$number.'] into memory ['.$position.']');
 		$ok = 1;
 	} else {
-		$self->log->write('warn', 'error storing number ['.$number.'] into memory ['.$position.']');
+		$self->log->write('warning', 'error storing number ['.$number.'] into memory ['.$position.']');
 		$ok = 0;
 	}
 
@@ -1010,7 +1010,7 @@ You can also see the B<examples> for how to log something without knowing
 all the gory details.
 
 Hint:
-	$modem->log->write('warn', 'ok, my log message here');
+	$modem->log->write('warning', 'ok, my log message here');
 
 =head2 new()
 
@@ -1069,7 +1069,7 @@ Examples:
 =item *
 
 C<loglevel> - default logging level. One of (order of decrescent verbosity): C<debug>,
-C<verbose>, C<info>, C<warn>, C<error>, C<crit>.
+C<verbose>, C<notice>, C<info>, C<warning>, C<err>, C<crit>, C<alert>, C<emerg>.
 
 =back
 
