@@ -3,10 +3,15 @@
 # Author: Cosimo Streppone <cosimo@cpan.org>
 # Date  : 2000/10/13 (ported to CPAN in 2002)
 #
-# $Id: Modem.pm,v 1.2 2002-03-21 06:51:51 cosimo Exp $
+# WARNING
+#	This is PRE-ALPHA software, still needs extensive testing and
+#   support for generic AT commads, so use it at your own risk,
+#   and without ANY warranty! Have fun.
+#
+# $Id: Modem.pm,v 1.3 2002-03-21 07:00:35 cosimo Exp $
 
 package Device::Modem;
-$VERSION = substr q$Revision: 1.2 $, 10; 
+$VERSION = substr q$Revision: 1.3 $, 10; 
 
 use strict;
 use Device::SerialPort;
@@ -323,6 +328,12 @@ __END__
 
 Device::Modem - Perl extension to talk to AT devices via serial ports
 
+=head1 WARNING
+
+   This is B<PRE-ALPHA> software, still needs extensive testing and
+   support for generic AT commads, so use it at your own risk,
+   and without B<ANY> warranty! Have fun.
+
 =head1 SYNOPSIS
 
   use Device::Modem;
@@ -340,10 +351,8 @@ Device::Modem - Perl extension to talk to AT devices via serial ports
   $modem->echo(1);              # enable local echo
   $modem->echo(0);              # disable it
 
-  $modem->hangup();             # returns modem answer
-
   $modem->offhook();            # Take off hook (ready to dial)
-
+  $modem->hangup();             # returns modem answer
   $modem->reset();              # hangup + attention + restore setting 0 (Z0)
 
   $modem->send_init_string();   # Send initialization string
