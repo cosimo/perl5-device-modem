@@ -6,9 +6,12 @@ README
 test.pl
 lib/Device/Modem/Log/File.pm
 lib/Device/Modem/Log/Syslog.pm
+lib/Device/Modem/Protocol/Xmodem.pm
 examples/shell.pl
 examples/dial.pl
 examples/active.pl
+examples/xmodem.pl
+docs/Modem.pod
 docs/Modem.html
 docs/FAQ.pod
 docs/FAQ.html
