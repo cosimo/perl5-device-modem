@@ -1,6 +1,6 @@
 # Device::Modem - a Perl class to interface generic modems (AT-compliant)
 #
-# Copyright (C) 2002-2003 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2002-2004 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.32 2004-01-23 00:14:30 cosimo Exp $
+# $Id: Modem.pm,v 1.33 2004-01-23 00:28:25 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.32 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.33 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -1330,7 +1330,7 @@ Cosimo Streppone, L<cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
-(C) 2002-2003 Cosimo Streppone, L<cosimo@cpan.org>
+(C) 2002-2004 Cosimo Streppone, L<cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.

@@ -152,10 +152,10 @@ Oh, yes!
 Please feel free to contact L<cosimo@cpan.org> to decide details about this... :-)
 
 =for html
-Or, if you have nothing wrong with that, go to my <A HREF="http://www.amazon.com">Amazon wishlist</A>.
+Or, if you have nothing wrong with that, go to my <A HREF="http://www.amazon.com/gp/registry/registry.html?id=3TB9RMFORFIV5">Amazon wishlist</A>.
 
 =for pod
-Or, if you have nothing wrong with that, go to my amazon wishlist.
+Or, if you have nothing wrong with that, go to my amazon wishlist (C<http://www.amazon.com/gp/registry/registry.html?id=3TB9RMFORFIV5>).
 
 =head2 I think you are a ?#!x$*z!#(!* and your software sucks
 

@@ -1,5 +1,6 @@
 Revision history for Perl extension Device::Modem.
 
+1.33
 1.32
 1.31  Fri Jan 23 01:14:01 CET 2004
     - Improved reliability in answer() method (sempre lui!),
