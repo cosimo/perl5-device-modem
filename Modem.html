@@ -1,7 +1,7 @@
 <HTML>
 <HEAD>
 <TITLE>Device::Modem - Perl extension to talk to AT devices connected via serial port</TITLE>
-<LINK REV="made" HREF="mailto:cosimo@dev.xproject.org">
+<LINK REV="made" HREF="mailto:cosimo@cpan.org">
 </HEAD>
 
 <BODY>
@@ -21,6 +21,7 @@
 		<LI><A HREF="#export">EXPORT</A></LI>
 	</UL>
 
+	<LI><A HREF="#todo">TO-DO</A></LI>
 	<LI><A HREF="#author">AUTHOR</A></LI>
 	<LI><A HREF="#see also">SEE ALSO</A></LI>
 </UL>
@@ -101,6 +102,25 @@ based on serial connections.</P>
 <P>
 <H2><A NAME="export">EXPORT</A></H2>
 <P>None</P>
+<P>
+<HR>
+<H1><A NAME="todo">TO-DO</A></H1>
+<UL>
+<LI>
+AutoScan
+<P>An AT command script with all interesting commands is run
+when `autoscan' is invoked, creating a `profile' of the
+current device, with list of supported commands, and database
+of brand/model-specific commands</P>
+<P></P>
+<LI>
+Time::HiRes
+<P>Check if Time::HiRes module is installed and use it
+to wait milliseconds instead of whole seconds</P>
+<P></P>
+<LI>
+Many more to come!
+<P></P></UL>
 <P>
 <HR>
 <H1><A NAME="author">AUTHOR</A></H1>

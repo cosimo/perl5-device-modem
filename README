@@ -61,6 +61,21 @@ DESCRIPTION
 
     None
 
+TO-DO
+    *   AutoScan
+
+        An AT command script with all interesting commands is run when
+        `autoscan' is invoked, creating a `profile' of the current device,
+        with list of supported commands, and database of
+        brand/model-specific commands
+
+    *   Time::HiRes
+
+        Check if Time::HiRes module is installed and use it to wait
+        milliseconds instead of whole seconds
+
+    *   Many more to come!
+
 AUTHOR
     Cosimo Streppone, cosimo@cpan.org
 

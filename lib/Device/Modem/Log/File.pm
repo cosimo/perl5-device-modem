@@ -1,12 +1,12 @@
-# $Id: File.pm,v 1.2 2002-03-21 06:40:50 cosimo Exp $
+# $Id: File.pm,v 1.3 2002-04-03 21:33:06 cosimo Exp $
 package Device::Modem::Log::File;
-$VERSION = substr q$Revision: 1.2 $, 10;
+$VERSION = substr q$Revision: 1.3 $, 10;
 
 use strict;
 use warnings;
 
 sub new {
-	my( $class, $filename ) = @_;
+	my( $class, $package, $filename ) = @_;
 	$filename ||= '/var/log/modem.log';
 
 	my %obj = (

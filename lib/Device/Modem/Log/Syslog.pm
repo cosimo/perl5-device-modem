@@ -1,10 +1,10 @@
-# $Id: Syslog.pm,v 1.2 2002-03-21 06:40:50 cosimo Exp $
+# $Id: Syslog.pm,v 1.3 2002-04-03 21:33:06 cosimo Exp $
 #
 # Device::Modem log class that logs modem activity
 # on common system log
 #
 package Device::Modem::Log::Syslog;
-$VERSION = substr q$Revision: 1.2 $, 10;
+$VERSION = substr q$Revision: 1.3 $, 10;
 
 use strict;
 use warnings;
@@ -12,8 +12,9 @@ use warnings;
 use Sys::Syslog ();
 
 sub new {
+	my($class, $package) = @_;
 	Sys::Syslog::setlogsock('unix');
-	Sys::Syslog::openlog('Device::Modem', 'cons,pid', 'user');
+	Sys::Syslog::openlog($package, 'cons,pid', 'user');
 	my $loglevel = 'info';
 	bless \$loglevel, 'Device::Modem::Log::Syslog';
 }
