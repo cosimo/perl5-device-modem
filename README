@@ -1,108 +1,54 @@
-NAME
-    Device::Modem - Perl extension to talk to modem devices connected via
-    serial port
+=======================================================================
+Device::Modem - a Perl class to interface generic modems (AT-compliant)
+Copyright (C) 2002-2003 Cosimo Streppone, cosimo@cpan.org
+=======================================================================
 
-WARNING
-       This is C<ALPHA> software, still needs extensive testing and
-       support for generic AT commands, so use it at your own risk,
-       and without C<ANY> warranty! Have fun.
+This is a perl extension to talk to AT compliant devices via serial port.
+It should be enough platform independent as you need.
 
-SYNOPSIS
-      use Device::Modem;
+For more details, look at the "docs/" folder where you will find
+a minimal FAQ ("docs/FAQ.html"), and the full documentation for
+this extension ("docs/Modem.html").
 
-      my $modem = new Device::Modem( port => '/dev/ttyS1' );
+Please contact me for any problems you may encounter using this beast.
 
-      if( $modem->connect( baudrate => 9600 ) ) {
-          print "connected!\n";
-      } else {
-          print "sorry, no connection with serial port!\n";
-      }
+Have fun!
 
-      $modem->attention();          # send `attention' sequence (+++)
 
-      $modem->dial('02270469012');  # dial phone number
-      $modem->dial(3);              # 1-digit parameter = dial number stored in memory 3
 
-      $modem->echo(1);              # enable local echo (0 to disable)
+Prerequisites
+-------------
 
-      $modem->offhook();            # Take off hook (ready to dial)
-      $modem->hangup();             # returns modem answer
++ working perl installation >= 5.005_03
++ Device::SerialPort 0.19
++ a modem or AT-compliant device if you want to use
+  it for some real work
 
-      $modem->is_active();          # Tests whether modem device is active or not
-                                    # So far it works for modem OFF/ modem ON condition
 
-      $modem->reset();              # hangup + attention + restore setting 0 (Z0)
+Installation
+------------
 
-      $modem->restore_factory_settings();  # Handle with care!
-      $modem->restore_factory_settings(1); # Same with preset profile 1 (can be 0 or 1)
+This module installs like all other good old perl modules:
 
-      $modem->send_init_string();   # Send initialization string
-                                    # Now this is fixed to 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4'
+$ perl Makefile.PL
+$ make
+$ make test
+$ make install
 
-      # Get/Set value of S1 register
-      my $S1 = $modem->S_register(1);
-      my $S1 = $modem->S_register(1, 55); # Don't do that if you definitely don't know!
 
-      # Get status of managed signals (CTS, DSR, RLSD, RING)
-      my %signal = $modem->status();
-      if( $signal{DSR} ) { print "Data Set Ready signal active!\n"; }
+Licensing terms
+---------------
 
-      # Stores this number in modem memory number 3
-      $modem->store_number(3, '01005552817');
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+Additionally, this is BETA software, so use it at your own risk,
+and without ANY warranty!
+For any need of commercial support and/or licensing, please contact
+me directly: Cosimo Streppone <cosimo@cpan.org>
 
-      $modem->repeat();             # Repeat last command
 
-      $modem->verbose(1);           # Normal text responses (0=numeric codes)
+Advertising :-)
+---------------
 
-      # Some raw AT commands
-      $modem->atsend( 'ATH0' );
-      print $modem->answer();
-
-      $modem->atsend( 'ATDT01234567' . Device::Modem::CR );
-      print $modem->answer();
-
-DESCRIPTION
-    Device::Modem class implements basic AT (Hayes) compliant device
-    abstraction. It is meant to be inherited by sub classes (as
-    Device::Gsm), which are based on serial connections.
-
-    In the `examples' directory, there are some scripts that should work
-    without big problems, that you can take as (yea) examples:
-
-    `examples/active.pl'
-        Tests if modem is alive
-
-    `examples/dial.pl'
-        Dials a phone number and display result of call
-
-    `examples/shell.pl'
-        (Very) poor man's minicom/hyperterminal utility
-
-  REQUIRES
-    Device::SerialPort (Win32::SerialPort for Windows machines)
-
-  EXPORT
-    None
-
-TO-DO
-    *   AutoScan
-
-        An AT command script with all interesting commands is run when
-        `autoscan' is invoked, creating a `profile' of the current device,
-        with list of supported commands, and database of
-        brand/model-specific commands
-
-    *   Many more to come!
-
-AUTHOR
-    Cosimo Streppone, cosimo@cpan.org
-
-COPYRIGHT
-    (C) 2002 Cosimo Streppone, cosimo@cpan.org
-
-    This library is free software; you can only redistribute it and/or
-    modify it under the same terms as Perl itself.
-
-SEE ALSO
-    Device::SerialPort, Device::Gsm, Win32::SerialPort, perl
-
+Check out also Device::Gsm module from the same author
+to work with GSM devices connected via serial port.
