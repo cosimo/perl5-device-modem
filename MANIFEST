@@ -1,0 +1,7 @@
+Modem.pm
+Changes
+MANIFEST
+Makefile.PL
+test.pl
+lib/Device/Modem/Log/File.pm
+lib/Device/Modem/Log/Syslog.pm

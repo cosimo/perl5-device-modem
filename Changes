@@ -1,0 +1,6 @@
+Revision history for Perl extension Device::Modem.
+
+0.01  Tue Feb 26 22:15:22 2002
+	- original version; created by h2xs 1.20 with options
+		-A -X -n Device::Modem -v 0.01
+
