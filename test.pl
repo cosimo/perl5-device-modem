@@ -1,4 +1,4 @@
-# $Id: test.pl,v 1.12 2002-06-17 20:11:19 Cosimo Exp $
+# $Id: test.pl,v 1.13 2002-09-03 20:02:23 cosimo Exp $
 #
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
@@ -237,10 +237,9 @@ if( $not_connected_guess >= 4 ) {
 	print <<EOT;
 
 --------------------------------------------------------
-Results of your test procedure indicate
-almost certainly that you *DON'T HAVE* a modem device
-connected to your *serial port* or maybe it's the wrong
-port.
+Results of your test procedure indicate almost
+certainly that you *DON'T HAVE* a modem device connected
+to your *serial port* or maybe it's the wrong port.
 --------------------------------------------------------
 
 EOT
