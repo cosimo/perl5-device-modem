@@ -23,8 +23,7 @@ SYNOPSIS
       $modem->dial('02270469012');  # dial phone number
       $modem->dial(3);              # 1-digit parameter = dial number stored in memory 3
 
-      $modem->echo(1);              # enable local echo
-      $modem->echo(0);              # disable it
+      $modem->echo(1);              # enable local echo (0 to disable)
 
       $modem->offhook();            # Take off hook (ready to dial)
       $modem->hangup();             # returns modem answer
@@ -53,12 +52,9 @@ SYNOPSIS
 
       $modem->repeat();             # Repeat last command
 
-      $modem->verbose(0);           # Modem responses are numerical
-      $modem->verbose(1);           # Normal text responses
+      $modem->verbose(1);           # Normal text responses (0=numeric codes)
 
-      #
       # Some raw AT commands
-      #
       $modem->atsend( 'ATH0' );
       print $modem->answer();
 
@@ -89,12 +85,6 @@ DESCRIPTION
     None
 
 TO-DO
-    *   Document log interface
-
-        Explain which type of logging hooks you can use with Device::Modem
-        and its sub-classes (Device::Gsm). For now, they are only `file' and
-        `syslog'
-
     *   AutoScan
 
         An AT command script with all interesting commands is run when

@@ -9,14 +9,14 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.22 2002-09-25 22:20:06 cosimo Exp $
+# $Id: Modem.pm,v 1.23 2002-12-03 22:16:12 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.22 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.23 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
-	if( $^O =~ /Win/i ) {
+	if( $^O =~ /Win/io ) {
 
 		require Win32::SerialPort;
 		import  Win32::SerialPort;
@@ -51,7 +51,7 @@ use constant CTRL_Z => chr(26);
 use constant CR => "\r";
 
 # Connection defaults
-$Device::Modem::DEFAULT_PORT = ( $^O =~ /win32/i ) ? 'COM1' : '/dev/modem';
+$Device::Modem::DEFAULT_PORT = ( $^O =~ /Win/io ) ? 'COM1' : '/dev/modem';
 $Device::Modem::BAUDRATE = 19200;
 $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
@@ -77,7 +77,7 @@ sub new {
 	my $class = ref($proto) || $proto;      # Get reference to class
 
 	$aOpt{'ostype'} = $^O;                  # Store OSTYPE in object
-	$aOpt{'ostype'} =~ /Win/i and $aOpt{'ostype'} = 'windoze';
+	$aOpt{'ostype'} =~ /Win/io and $aOpt{'ostype'} = 'windoze';
 
 	# Initialize flags array
 	$aOpt{'flags'} = {};
@@ -319,7 +319,7 @@ sub status {
 	);
 
 	$self->log->write('info', 'modem on '.$self->{'port'}.' status is ['.$status.']');
-	$self->log->write('info', "CTS:$signal{CTS} DSR=$signal{DSR} RING=$signal{RING} RLSD=$signal{RLSD}");
+	$self->log->write('info', "CTS=$signal{CTS} DSR=$signal{DSR} RING=$signal{RING} RLSD=$signal{RLSD}");
 
 	return %signal;
 }
@@ -492,7 +492,6 @@ sub connect {
 # $^O is stored into object
 sub ostype {
 	my $self = shift;
-	$self->{'ostype'} =~ /Win/o and return 'windoze';
 	$self->{'ostype'};
 }
 
@@ -654,8 +653,7 @@ Device::Modem - Perl extension to talk to modem devices connected via serial por
   $modem->dial('02270469012');  # dial phone number
   $modem->dial(3);              # 1-digit parameter = dial number stored in memory 3
 
-  $modem->echo(1);              # enable local echo
-  $modem->echo(0);              # disable it
+  $modem->echo(1);              # enable local echo (0 to disable)
 
   $modem->offhook();            # Take off hook (ready to dial)
   $modem->hangup();             # returns modem answer
@@ -684,12 +682,9 @@ Device::Modem - Perl extension to talk to modem devices connected via serial por
 
   $modem->repeat();             # Repeat last command
 
-  $modem->verbose(0);           # Modem responses are numerical
-  $modem->verbose(1);           # Normal text responses
+  $modem->verbose(1);           # Normal text responses (0=numeric codes)
 
-  #
   # Some raw AT commands
-  #
   $modem->atsend( 'ATH0' );
   print $modem->answer();
 
