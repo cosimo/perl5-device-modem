@@ -1,9 +1,9 @@
+# $Id: Makefile.PL,v 1.2 2002-04-09 22:15:39 cosimo Exp $
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
 WriteMakefile(
-    'NAME'		=> 'Device::Modem',
-    'VERSION_FROM'	=> 'Modem.pm', # finds $VERSION
-    'PREREQ_PM'		=> { Device::SerialPort => '' } # e.g., Module::Name => 1.1
-
+	'AUTHOR'        => 'Cosimo Streppone <cosimo@cpan.org>',
+	'ABSTRACT_FROM' => 'Modem.pm',
+    'NAME'	        => 'Device::Modem',
+    'VERSION_FROM'	=> 'Modem.pm',
+    'PREREQ_PM'		=> { Device::SerialPort => '' } 
 );

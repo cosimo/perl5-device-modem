@@ -79,6 +79,10 @@ TO-DO
 AUTHOR
     Cosimo Streppone, cosimo@cpan.org
 
+COPYRIGHT
+    This library is free software; you can only redistribute it and/or
+    modify it under the same terms as Perl itself.
+
 SEE ALSO
-    Device::SerialPort(3), perl(1).
+    the Device::SerialPort manpage, the perl manpage.
 

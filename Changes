@@ -22,3 +22,6 @@ Revision history for Perl extension Device::Modem.
 	  informational responses
 	- added TO-DO list to pod
 
+1.10  Wed Apr 10 00:11:35 CEST 2002
+	- modified docs, license details
+	- fixed wrong hangup() call
