@@ -7,8 +7,8 @@ This is a perl extension to talk to AT compliant devices via serial port.
 It should be enough platform independent as you need.
 
 For more details, look at the "docs/" folder where you will find
-a minimal FAQ ("docs/FAQ.html"), and the full documentation for
-this extension ("docs/Modem.html").
+a minimal FAQ ("docs/FAQ.pod"), and the full documentation for
+this extension ("docs/Modem.pod").
 
 Please contact me for any problems you may encounter using this beast.
 
@@ -52,3 +52,4 @@ Advertising :-)
 
 Check out also Device::Gsm module from the same author
 to work with GSM devices connected via serial port.
+
