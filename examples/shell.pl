@@ -1,7 +1,12 @@
 #!/usr/bin/perl
 #
-# $Id: shell.pl,v 1.4 2002-04-03 20:02:44 cosimo Exp $
+# Simple test program that executes a modem `shell'
+# to monitor AT command results.
 #
+# ******************************************
+# If it does not work, try with baud = 9600
+#
+# $Id: shell.pl,v 1.5 2002-12-03 23:33:01 cosimo Exp $
 
 use strict;
 use Device::Modem;
@@ -17,10 +22,16 @@ chomp $port;
 
 $port ||= '/dev/ttyS1';
 
-my $modem = new Device::Modem ( port => $port, baud => 9600 );
+print "Your baud rate? [19200]\n";
+my $baud = <STDIN>;
+chomp $baud;
+
+$baud ||= 19200;
+
+my $modem = new Device::Modem ( port => $port );
 my $stop;
 
-die "Could not connect to $port!\n" unless $modem->connect();
+die "Could not connect to $port!\n" unless $modem->connect( baudrate => $baud );
 
 
 print "Connected to $port.\n\n";
