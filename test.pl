@@ -1,4 +1,4 @@
-# $Id: test.pl,v 1.14 2002-12-03 22:15:35 cosimo Exp $
+# $Id: test.pl,v 1.15 2003-11-08 16:04:55 cosimo Exp $
 #
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
@@ -215,6 +215,20 @@ if( $v1 eq $v5 && $v1 == $v5 &&
 	print "not ok 11\n";
 }
 
+# --- 12 ---
+print 'test reading several lines of data (maybe this test fails, is badly written) ...', "\n";
+
+$modem->atsend('ATI4'.Device::Modem::CR);
+$ans = $modem->answer();
+# Probably here ans is ERROR, or something else that depends on modem model
+if( length($ans) < 5 || length($ans) > 200 ) {
+	print "ok 12\n";
+} else {
+	print "nok 12\n";
+}
+
+# --- 13 ---
+
 print 'testing status of modem signals...', "\n";
 
 my $signals_on = 0;
@@ -225,9 +239,9 @@ foreach( keys %status ) {
 }
 
 if( $signals_on > 1 ) {
-	print "ok 12\n";
+	print "ok 13\n";
 } else {
-	print "not ok 12\n";
+	print "not ok 13\n";
 	$not_connected_guess++;
 }
 
