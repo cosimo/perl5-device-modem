@@ -1,14 +1,20 @@
-# $Id: Syslog.pm,v 1.5 2002-09-03 20:01:14 cosimo Exp $
+# Device::Modem::Log::Syslog - Syslog logging plugin for Device::Modem class
 #
-# Device::Modem log class that logs modem activity
-# on common system log
+# Copyright (C) 2002 Cosimo Streppone, cosimo@cpan.org
 #
+# This program is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+# Additionally, this is ALPHA software, still needs extensive
+# testing and support for generic AT commads, so use it at your own risk,
+# and without ANY warranty! Have fun.
+#
+# $Id: Syslog.pm,v 1.6 2002-12-03 21:27:52 cosimo Exp $
+
 package Device::Modem::Log::Syslog;
-$VERSION = substr q$Revision: 1.5 $, 10;
+$VERSION = substr q$Revision: 1.6 $, 10;
 
 use strict;
-use warnings;
-
 use Sys::Syslog ();
 
 sub new {
@@ -36,7 +42,7 @@ __END__
 
 =head1 NAME
 
-Device::Modem::Log::Syslog - Device::Modem log hook class for logging devices activity to syslog 
+Device::Modem::Log::Syslog - Syslog logging plugin for Device::Modem class
 
 =head1 SYNOPSIS
 
@@ -53,11 +59,15 @@ modem activity, commands, ... to B<syslog>
 It is loaded automatically at B<Device::Modem> startup,
 only if you specify C<syslog> value to C<log> parameter.
 
+If you don't have B<Sys::Syslog> additional module installed,
+you will not be able to use this logging plugin, and you should
+better leave the default logging (to text file).
+
 =head2 REQUIRES
 
-Sys::Syslog
+C<Sys::Syslog>
 
-=head2 EXPORT
+=head2 EXPORTS
 
 None
 
@@ -67,12 +77,14 @@ Cosimo Streppone, cosimo@cpan.org
 
 =head1 COPYRIGHT
 
+(C) 2002 Cosimo Streppone, cosimo@cpan.org
+
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-Device::Modem
-Device::Modem::Log::File
+C<Device::Modem>
+C<Device::Modem::Log::File>
 
 =cut
