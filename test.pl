@@ -19,8 +19,10 @@ print "ok 1\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
-print "\n\n*** REMEMBER to run these tests as `root' (where required)!\n\n";
-sleep 2;
+print "\n\n*** REMEMBER to run these tests as `root' (where required)!\n\n"
+        unless $^O =~ /Win/i;
+
+sleep 1;
 
 my %config;
 if( open CACHED_CONFIG, '< .config' ) {
@@ -45,12 +47,13 @@ if( $config{'tty'} ) {
 	chomp( $port = <STDIN> );
 
 	$port ||= $config{'tty'};
-	
+
 	$config{'baud'} = 57600;
 	print "What is your default baud speed? [$config{'baud'}] ";
 	chomp( $baud = <STDIN> );
 
 	$baud ||= $config{'baud'};
+	$config{'baud'} = $baud;
 
 	if( open( CONFIG, '>.config' ) ) {
 		print CONFIG "tty\t$port\n", "baud\t$baud\n";
@@ -152,6 +155,7 @@ if( $modem->offhook() ) {
 
 sleep(1);
 
+# 9
 print 'hanging up...', "\n";
 if( $modem->hangup() =~ /OK/ ) {
 	print "ok 9\n";
@@ -161,14 +165,24 @@ if( $modem->hangup() =~ /OK/ ) {
 }
 
 
+# --- 10 ---
+print 'testing is_active() function...', "\n";
+if( $modem->is_active() ) {
+	print "ok 10\n";
+} else {
+	print "not ok 10\n";
+	$not_connected_guess += 10;
+}
+
+
 if( $not_connected_guess >= 4 ) {
 
-	
+
 	print <<EOT;
 
 --------------------------------------------------------
 Results of your test procedure indicate
-almost certainly that you *DON'T HAVE* a GSM device
+almost certainly that you *DON'T HAVE* a modem device
 connected to your *serial port* or maybe it's the wrong
 port.
 --------------------------------------------------------
