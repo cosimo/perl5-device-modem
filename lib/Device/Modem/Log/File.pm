@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: File.pm,v 1.6 2002-12-03 21:34:09 cosimo Exp $
+# $Id: File.pm,v 1.7 2002-12-03 22:14:45 cosimo Exp $
 #
 package Device::Modem::Log::File;
-$VERSION = substr q$Revision: 1.6 $, 10;
+$VERSION = substr q$Revision: 1.7 $, 10;
 
 use strict;
 use File::Path     ();
@@ -29,7 +29,23 @@ sub new {
 		loglevel => 'info'
 	);
 
-	bless \%obj, 'Device::Modem::Log::File';
+	my $self = bless \%obj, 'Device::Modem::Log::File';
+	
+	# Open file at the start and save reference	
+	if( open( LOGFILE, '>>'.$self->{'file'} ) ) {
+
+		$self->{'fh'} = \*LOGFILE;
+
+		# Unbuffer writes to logfile
+		my $oldfh = select $self->{'fh'};
+		$| = 1;
+		select $oldfh;
+
+	} else {
+		warn('Could not open '.$self->{'file'}.' to start logging');
+	}
+
+	return $self;
 }
 
 # provide a suitable filename default
@@ -47,27 +63,54 @@ sub default_filename() {
 
 sub filename {
 	my $self = shift();
+	$self->{'file'} ||= $self->default_filename();
 
 	if( ! -d File::Basename::dirname($self->{'file'}) ) {
 		File::Path::mkpath( File::Basename::dirname($self->{'file'}), 0, 0755 );
 	}
 
-	$self->{'file'};
+	return $self->{'file'};
 }
 
+
+
+
+{
+	# Define log levels like syslog service
+	my %levels = ( verbose => 10, info => 20, 'warn' => 30, error => 40, crit => 50 );
+
 sub write($$) {
+
 	my($self, $level, @msg) = @_;
-	if( open(LOGFILE, '>>'.$self->{'file'}) ) {
-		map { tr/\r\n/^M/s } @msg;
-		print LOGFILE join("\t", scalar localtime, $0, $level, @msg), "\n";
-		close LOGFILE;
-	} else {
-		warn('cannot log '.$level.' '.join("\t",@msg).' to file: '.$! );
+
+	# If log level mask allows it, log given message
+	if( $levels{$level} >= $levels{$self->{'loglevel'}} ) {
+
+		if( my $fh = $self->fh() ) {
+			map { tr/\r\n/^M/s } @msg;
+			print $fh join("\t", scalar localtime, $0, $level, @msg), "\n";
+		} else {
+			warn('cannot log '.$level.' '.join("\t",@msg).' to file: '.$! );
+		}
+
 	}
 
 }
 
-sub close { 1 }
+}
+
+sub fh {
+	my $self = shift;
+	return $self->{'fh'};
+}
+
+# Closes log file opened in new() 
+sub close {
+	my $self = shift;
+	my $fh = $self->{'FH'};
+	close $fh;
+	undef $self->{'FH'};
+}
 
 1;
 
