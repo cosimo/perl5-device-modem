@@ -1,4 +1,4 @@
-# $Id: active.pl,v 1.1 2002-06-03 19:00:44 Cosimo Exp $
+# $Id: active.pl,v 1.2 2002-09-03 19:39:39 cosimo Exp $
 #
 # This script tries to test if modem is active (on and enabled)
 # If modem is not active, tries to reset it.
@@ -10,6 +10,8 @@
 #
 # It's not a big thing, I know ... :-(
 #
+
+use Device::Modem;
 
 my %config;
 if( open CACHED_CONFIG, '< ../.config' ) {
