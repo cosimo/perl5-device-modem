@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: File.pm,v 1.7 2002-12-03 22:14:45 cosimo Exp $
+# $Id: File.pm,v 1.8 2003-05-17 17:04:54 cosimo Exp $
 #
 package Device::Modem::Log::File;
-$VERSION = substr q$Revision: 1.7 $, 10;
+$VERSION = substr q$Revision: 1.8 $, 10;
 
 use strict;
 use File::Path     ();
@@ -77,7 +77,7 @@ sub filename {
 
 {
 	# Define log levels like syslog service
-	my %levels = ( verbose => 10, info => 20, 'warn' => 30, error => 40, crit => 50 );
+	my %levels = ( verbose => 10, debug => 10, info => 20, 'warn' => 30, error => 40, crit => 50 );
 
 sub write($$) {
 
