@@ -1,10 +1,10 @@
-# $Id: Syslog.pm,v 1.3 2002-04-03 21:33:06 cosimo Exp $
+# $Id: Syslog.pm,v 1.4 2002-04-09 22:18:17 cosimo Exp $
 #
 # Device::Modem log class that logs modem activity
 # on common system log
 #
 package Device::Modem::Log::Syslog;
-$VERSION = substr q$Revision: 1.3 $, 10;
+$VERSION = substr q$Revision: 1.4 $, 10;
 
 use strict;
 use warnings;
@@ -65,6 +65,11 @@ None
 =head1 AUTHOR
 
 Cosimo Streppone, cosimo@cpan.org
+
+=head1 COPYRIGHT
+
+This library is free software; you can only redistribute it and/or
+modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
