@@ -2,6 +2,7 @@ Modem.pm
 Modem.html
 Changes
 MANIFEST
+COPYING
 Makefile.PL
 README
 test.pl
