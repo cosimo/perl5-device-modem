@@ -20,7 +20,7 @@ Prerequisites
 -------------
 
 + working perl installation >= 5.005_03
-+ Device::SerialPort 0.19
++ Device::SerialPort >= 0.19 (Win32::SerialPort in on Windows platform)
 + a modem or AT-compliant device if you want to use
   it for some real work
 
