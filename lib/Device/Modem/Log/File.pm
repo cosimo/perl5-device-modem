@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: File.pm,v 1.14 2004-11-10 09:04:45 cosimo Exp $
+# $Id: File.pm,v 2.0 2004-11-10 09:06:22 cosimo Exp $
 #
 package Device::Modem::Log::File;
-$VERSION = substr q$Revision: 1.14 $, 10;
+$VERSION = substr q$Revision: 2.0 $, 10;
 
 use strict;
 use File::Path     ();
