@@ -1,9 +1,22 @@
-# $Id: File.pm,v 1.5 2002-04-12 05:13:53 cosimo Exp $
+# Device::Modem::Log::File - Text files logging plugin for Device::Modem class
+#
+# Copyright (C) 2002 Cosimo Streppone, cosimo@cpan.org
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+# Additionally, this is ALPHA software, still needs extensive
+# testing and support for generic AT commads, so use it at your own risk,
+# and without ANY warranty! Have fun.
+#
+# $Id: File.pm,v 1.6 2002-12-03 21:34:09 cosimo Exp $
+#
 package Device::Modem::Log::File;
-$VERSION = substr q$Revision: 1.5 $, 10;
+$VERSION = substr q$Revision: 1.6 $, 10;
 
 use strict;
-use warnings;
+use File::Path     ();
+use File::Basename ();
 
 sub new {
 	my( $class, $package, $filename ) = @_;
@@ -34,6 +47,11 @@ sub default_filename() {
 
 sub filename {
 	my $self = shift();
+
+	if( ! -d File::Basename::dirname($self->{'file'}) ) {
+		File::Path::mkpath( File::Basename::dirname($self->{'file'}), 0, 0755 );
+	}
+
 	$self->{'file'};
 }
 
@@ -53,11 +71,15 @@ sub close { 1 }
 
 1;
 
+
+
 __END__
+
+
 
 =head1 NAME
 
-Device::Modem::Log::File - Device::Modem log hook class for logging devices activity to text files
+Device::Modem::Log::File - Text files logging plugin for Device::Modem class
 
 =head1 SYNOPSIS
 
@@ -69,30 +91,39 @@ Device::Modem::Log::File - Device::Modem log hook class for logging devices acti
 
 =head1 DESCRIPTION
 
-This is meant for an example log class to be hooked to Device::Modem
+This is meant for an example log class to be hooked to C<Device::Modem>
 to provide one's favourite logging mechanism.
 You just have to implement your own C<new()>, C<write()> and C<close()> methods.
 
 Default text file is C</var/log/modem.log>. On Windows platforms, this
-goes into C<[WINDOWS]/temp/modem.log>.
+goes into C<%WINBOOTDIR%/temp/modem.log>. By default, if the folder of the
+log file does not exist, it is created.
 
-Loaded automatically by B<Device::Modem> class when an object
+This class is loaded automatically by C<Device::Modem> class when an object
 is instantiated, and it is the B<default> logging mechanism for
-B<Device::Modem> class.
+C<Device::Modem> class.
+
+Normally, you should B<not> need to use this class directly, because there
+are many other zillions of modules that do logging better than this.
+
+Also, it should be pondered whether to replace C<Device::Modem::Log::File>
+and mates with those better classes in a somewhat distant future.
 
 =head2 REQUIRES
 
 Device::Modem
 
-=head2 EXPORT
+=head2 EXPORTS
 
 None
 
 =head1 AUTHOR
 
-Cosimo Streppone, cosimo@cpan.org 
+Cosimo Streppone, cosimo@cpan.org
 
 =head1 COPYRIGHT
+
+(C) 2002 Cosimo Streppone, <cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.
