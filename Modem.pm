@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.16 2002-06-17 20:26:28 Cosimo Exp $
+# $Id: Modem.pm,v 1.17 2002-09-02 21:21:59 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.16 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.17 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -147,7 +147,7 @@ sub dial {
 	}
 
 	# Remove all non number chars plus some others allowed
-	$number =~ s/[^0-9,\(\)\*-\s]//g;
+	$number =~ s/[^0-9,\(\)\*\-\s]//g;
 
 	# Dial number and wait for response
 	if( length $number == 1 ) {
@@ -257,6 +257,7 @@ sub S_register {
 		$new_value =~ s|\D||g;
 		$self->log->write('info', 'storing value ['.$new_value.'] into register S'.$register);
 		$self->atsend( sprintf( 'AT S%02d=%d' . CR, $register, $new_value ) );
+
 
 		$value = ( index( $self->answer, 'OK' ) != -1 ) ? $new_value : undef;
 
@@ -548,7 +549,7 @@ sub answer {
 
 	$time_slice /= 1000;
 
-	$me->log->write('info', 'answer: expecting ['.$expect.'] or timeout ['.$timeout.']' );
+	$me->log->write('info', 'answer: expecting ['.($expect||'').'] or timeout ['.$timeout.']' );
 
 	# Main read cycle
 	my $cycle = 0;
