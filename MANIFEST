@@ -2,6 +2,7 @@ Modem.pm
 Changes
 MANIFEST
 Makefile.PL
+README
 test.pl
 lib/Device/Modem/Log/File.pm
 lib/Device/Modem/Log/Syslog.pm

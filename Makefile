@@ -47,9 +47,9 @@ AR_STATIC_ARGS = cr
 NAME = Device::Modem
 DISTNAME = Device-Modem
 NAME_SYM = Device_Modem
-VERSION = 1.1
-VERSION_SYM = 1_1
-XS_VERSION = 1.1
+VERSION = 1.2
+VERSION_SYM = 1_2
+XS_VERSION = 1.2
 INST_BIN = blib/bin
 INST_EXE = blib/script
 INST_LIB = blib/lib
@@ -641,7 +641,7 @@ $(MAKE_APERL_FILE) : $(FIRST_MAKEFILE)
 TEST_VERBOSE=0
 TEST_TYPE=test_$(LINKTYPE)
 TEST_FILE = test.pl
-TEST_FILES = t/*.t
+TEST_FILES = 
 TESTDB_SW = -d
 
 testdb :: testdb_$(LINKTYPE)
@@ -649,7 +649,6 @@ testdb :: testdb_$(LINKTYPE)
 test :: $(TEST_TYPE)
 
 test_dynamic :: pure_all
-	PERL_DL_NONLAZY=1 $(FULLPERL) -I$(INST_ARCHLIB) -I$(INST_LIB) -I$(PERL_ARCHLIB) -I$(PERL_LIB) -e 'use Test::Harness qw(&runtests $$verbose); $$verbose=$(TEST_VERBOSE); runtests @ARGV;' $(TEST_FILES)
 	PERL_DL_NONLAZY=1 $(FULLPERL) -I$(INST_ARCHLIB) -I$(INST_LIB) -I$(PERL_ARCHLIB) -I$(PERL_LIB) $(TEST_FILE)
 
 testdb_dynamic :: pure_all
@@ -664,7 +663,7 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd:
-	@$(PERL) -e "print qq{<SOFTPKG NAME=\"Device-Modem\" VERSION=\"1,1,0,0\">\n}. qq{\t<TITLE>Device-Modem</TITLE>\n}. qq{\t<ABSTRACT></ABSTRACT>\n}. qq{\t<AUTHOR></AUTHOR>\n}. qq{\t<IMPLEMENTATION>\n}. qq{\t\t<DEPENDENCY NAME=\"Device-SerialPort\" VERSION=\"0,0,0,0\" />\n}. qq{\t\t<OS NAME=\"$(OSNAME)\" />\n}. qq{\t\t<ARCHITECTURE NAME=\"i586-linux\" />\n}. qq{\t\t<CODEBASE HREF=\"\" />\n}. qq{\t</IMPLEMENTATION>\n}. qq{</SOFTPKG>\n}" > Device-Modem.ppd
+	@$(PERL) -e "print qq{<SOFTPKG NAME=\"Device-Modem\" VERSION=\"1,2,0,0\">\n}. qq{\t<TITLE>Device-Modem</TITLE>\n}. qq{\t<ABSTRACT></ABSTRACT>\n}. qq{\t<AUTHOR></AUTHOR>\n}. qq{\t<IMPLEMENTATION>\n}. qq{\t\t<DEPENDENCY NAME=\"Device-SerialPort\" VERSION=\"0,0,0,0\" />\n}. qq{\t\t<OS NAME=\"$(OSNAME)\" />\n}. qq{\t\t<ARCHITECTURE NAME=\"i586-linux\" />\n}. qq{\t\t<CODEBASE HREF=\"\" />\n}. qq{\t</IMPLEMENTATION>\n}. qq{</SOFTPKG>\n}" > Device-Modem.ppd
 
 # --- MakeMaker pm_to_blib section:
 

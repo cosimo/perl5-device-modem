@@ -1,0 +1,55 @@
+NAME
+    Device::Modem - Perl extension to talk to AT devices via serial ports
+
+WARNING
+	This is PRE-ALPHA software, still needs extensive testing and
+    support for generic AT commads, so use it at your own risk!
+
+SYNOPSIS
+      use Device::Modem;
+
+      my $modem = new Device::Modem( port => '/dev/ttyS1', baud => 9600 )
+
+      if( $modem->connect() ) {
+          print "connected!\n";
+      } else {
+          print "sorry, no connection with serial port!\n';
+      }
+
+      $modem->attention();          # send `attention' sequence (+++)
+
+      $modem->echo(1);              # enable local echo
+      $modem->echo(0);              # disable it
+
+      $modem->hangup();             # returns modem answer
+      $modem->offhook();            # Take off hook (ready to dial)
+      $modem->reset();              # hangup + attention + restore setting 0 (Z0)
+      $modem->send_init_string();   # Send initialization string
+                                    # Now this is fixed to `ATZ0H0V1Q0E0'
+      #
+      # Some raw at commands
+      #
+      $modem->atsend( 'ATH0' );
+      print $modem->answer();
+
+      $modem->atsend( 'ATDT01234567' . Device::Modem::CR );
+      print $modem->answer();
+
+DESCRIPTION
+    Device::Modem class implements basic AT device abstraction. It is meant
+    to be inherited by sub classes (as Device::Gsm), which are based on
+    serial connections.
+
+  REQUIRES
+
+    Device::SerialPort
+  EXPORT
+
+    None
+
+AUTHOR
+    Cosimo Streppone, cosimo@cpan.org
+
+SEE ALSO
+    Device::SerialPort(3), perl(1).
+
