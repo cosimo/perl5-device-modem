@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.35 2004-02-22 16:52:47 cosimo Exp $
+# $Id: Modem.pm,v 1.36 2004-02-22 17:18:43 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.35 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.36 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
