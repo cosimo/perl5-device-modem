@@ -10,6 +10,7 @@ BEGIN { $| = 1; print "1..6\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use lib '.';
 use Modem;
+
 $loaded = 1;
 print "ok 1\n";
 
@@ -19,46 +20,40 @@ print "ok 1\n";
 # (correspondingly "not ok 13") depending on the success of chunk 13
 # of the test code):
 
+
+# Load Makefile settings
+require '.config.pm';
+
+# If non-win platforms and user is not root, skip tests
+# because they access serial port (only accessible under root user)
+
+my $is_windoze = $^O =~ /Win/i;
+
+if( ! $is_windoze && ( $< || $> ) ) {
+	print "\n\n*** SKIPPING tests. You need root privileges to test modems on serial ports. Sorry\n";
+	skip(1) for (1..6);
+	exit(0);
+}
+
+
 print "\n\n*** REMEMBER to run these tests as `root' (where required)!\n\n"
-        unless $^O =~ /Win/i;
+        unless $is_windoze;
 
 sleep 1;
 
-my %config;
-if( open CACHED_CONFIG, '< .config' ) {
-	while( <CACHED_CONFIG> ) {
-		my @t = split /[\s\t]+/;
-		$config{ $t[0] } = $t[1];
-	}
-	close CACHED_CONFIG;
-}
+if( $Device::Modem::port eq 'NONE' || $Device::Modem::port eq '' ) {
 
-if( $config{'tty'} ) {
+	print "\n\n    [ No serial port set up, so no tests will be executed...\n";
+	print "    [ To enable tests, re-run `perl Makefile.PL' command.\n";
 
-	print "Your serial port is `$config{'tty'}' (cached)\n";
-	print "Link baud rate   is `$config{'baud'}' (cached)\n";
+	print "skip $_\n" for (2..6);
+
+	exit;
 
 } else {
 
-	$config{'tty'} = $^O =~ /Win32/i ? 'COM1' : '/dev/ttyS1';
-	my $port;
-
-	print "What is your serial port? [$config{'tty'}] ";
-	chomp( $port = <STDIN> );
-
-	$port ||= $config{'tty'};
-
-	$config{'baud'} = 57600;
-	print "What is your default baud speed? [$config{'baud'}] ";
-	chomp( $baud = <STDIN> );
-
-	$baud ||= $config{'baud'};
-	$config{'baud'} = $baud;
-
-	if( open( CONFIG, '>.config' ) ) {
-		print CONFIG "tty\t$port\n", "baud\t$baud\n";
-		close CONFIG;
-	}
+	print "Your serial port is `$Device::Modem::port' (configured by Makefile.PL)\n";
+	print "Link baud rate   is `$Device::Modem::baudrate' (configured by Makefile.PL)\n";
 
 }
 
@@ -76,9 +71,12 @@ my $not_connected_guess;
 # my $modem = new Device::Modem( port => $port, log => 'syslog' );
 
 # test text file logging
+my $port = $Device::Modem::port;
+my $baud = $Device::Modem::baudrate;
+
 my $modem = new Device::Modem( port => $port );
 
-if( $modem->connect(baudrate => $config{'baud'}) ) {
+if( $modem->connect(baudrate => $baud) ) {
 	print "ok 2\n";
 } else {
 	print "not ok 2\n";
