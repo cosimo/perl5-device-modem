@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.30 2003-11-08 17:59:12 cosimo Exp $
+# $Id: Modem.pm,v 1.31 2003-12-15 23:05:18 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.30 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.31 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -112,7 +112,6 @@ sub new {
 
 sub attention {
 	my $self = shift;
-
 	$self->log->write('info', 'sending attention sequence...');
 
 	# Send attention sequence
@@ -120,7 +119,6 @@ sub attention {
 
 	# Wait 200 milliseconds
 	$self->wait(200);
-
 	$self->answer();
 }
 
@@ -396,7 +394,7 @@ sub verbose {
 sub wait {
 	my( $self, $msec ) = @_;
 
-	$self->log->write('info', 'waiting for '.$msec.' msecs');
+	$self->log->write('debug', 'waiting for '.$msec.' msecs');
 
 	# Perhaps Time::HiRes here is not so useful, since I tested `select()' system call also on Windows
 	select( undef, undef, undef, $msec / 1000 );
@@ -546,8 +544,9 @@ sub atsend {
 	# Write message on port
 	$me->port->purge_all();
 	$cnt = $me->port->write($msg);
-	$me->port->write_drain() unless $me->ostype eq 'windoze';
+	$me->wait(400);
 
+	$me->port->write_drain() unless $me->ostype eq 'windoze';
 	$me->log->write('debug', 'atsend: wrote '.$cnt.'/'.length($msg).' chars');
 
 	# If wrote all chars of `msg', we are successful
@@ -559,7 +558,7 @@ sub atsend {
 sub _answer {
 	my $me = shift;
 	my($expect, $timeout) = @_;
-	my $time_slice = 0.1;                       # single cycle wait time
+	my $time_slice = 50;                       # single cycle wait time
 
 	# If we expect something, we must first match against serial input
 	my $done = (defined $expect and $expect ne '');
@@ -596,6 +595,7 @@ sub _answer {
 				$done = ( defined $answer && $answer =~ $expect ) ? 1 : 0;
 			}
 
+			#$me->log->write('debug', 'time_slice='.$time_slice);
 			$me->wait($time_slice) unless $done;
 
 		} else {
@@ -604,8 +604,8 @@ sub _answer {
 
 		}
 
-		# Check if we reached max time for timeout
-		if( $end_time > 0 ) {
+		# Check if we reached max time for timeout (only if end_time is defined)
+		if( $howmany == 0 && $end_time > 0 ) {
 			$done = ( time() >= $end_time ) ? 1 : 0;
 		}
 
