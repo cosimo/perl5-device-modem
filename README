@@ -83,18 +83,12 @@ DESCRIPTION
         (Very) poor man's minicom/hyperterminal utility
 
   REQUIRES
-
     Device::SerialPort (Win32::SerialPort for Windows machines)
-  EXPORT
 
+  EXPORT
     None
 
 TO-DO
-    *   Improve question/answer cycle
-
-        Do something better on question/answer routines with better
-        initializations, timeout handling and signals lookup.
-
     *   Document log interface
 
         Explain which type of logging hooks you can use with Device::Modem
