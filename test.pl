@@ -1,4 +1,4 @@
-# $Id: test.pl,v 1.11 2002-06-17 19:34:29 Cosimo Exp $
+# $Id: test.pl,v 1.12 2002-06-17 20:11:19 Cosimo Exp $
 #
 # Before `make install' is performed this script should be runnable with
 # `make test'. After `make install' it should work as `perl test.pl'
@@ -213,6 +213,23 @@ if( $v1 eq $v5 && $v1 == $v5 &&
 	$not_connected_guess++;
 	print "not ok 11\n";
 }
+
+print 'testing status of modem signals...', "\n";
+
+my $signals_on = 0;
+my %status = $modem->status();
+foreach( keys %status ) {
+	print "$_ signal is ", $status{$_} ? 'on' : 'off', "\n";
+	$signals_on++ if $status{$_};
+}
+
+if( $signals_on > 1 ) {
+	print "ok 12\n";
+} else {
+	print "not ok 12\n";
+	$not_connected_guess++;
+}
+
 
 if( $not_connected_guess >= 4 ) {
 
