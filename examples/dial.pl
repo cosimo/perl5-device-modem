@@ -1,4 +1,4 @@
-# $Id: dial.pl,v 1.1 2002-06-03 19:00:44 Cosimo Exp $
+# $Id: dial.pl,v 1.2 2004-02-18 21:49:54 cosimix Exp $
 #
 # This script tries to dial a number taken from STDIN
 # or as first argument.
@@ -12,6 +12,8 @@
 use Device::Modem;
 
 my %config;
+my $port;
+
 if( open CACHED_CONFIG, '< ../.config' ) {
 	while( <CACHED_CONFIG> ) {
 		my @t = split /[\s\t]+/;
@@ -23,11 +25,11 @@ if( open CACHED_CONFIG, '< ../.config' ) {
 if( $config{'tty'} ) {
 
 	print "Your serial port is `$config{'tty'}' (cached)\n";
+	$port ||= $config{'tty'};
 
 } else {
 
 	$config{'tty'} = $^O =~ /Win32/i ? 'COM1' : '/dev/ttyS1';
-	my $port;
 
 	print "What is your serial port? [$config{'tty'}] ";
 	chomp( $port = <STDIN> );

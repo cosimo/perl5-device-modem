@@ -1,4 +1,4 @@
-# $Id: active.pl,v 1.2 2002-09-03 19:39:39 cosimo Exp $
+# $Id: active.pl,v 1.3 2004-02-18 21:49:53 cosimix Exp $
 #
 # This script tries to test if modem is active (on and enabled)
 # If modem is not active, tries to reset it.
@@ -14,6 +14,8 @@
 use Device::Modem;
 
 my %config;
+my $port;
+
 if( open CACHED_CONFIG, '< ../.config' ) {
 	while( <CACHED_CONFIG> ) {
 		my @t = split /[\s\t]+/;
@@ -25,11 +27,11 @@ if( open CACHED_CONFIG, '< ../.config' ) {
 if( $config{'tty'} ) {
 
 	print "Your serial port is `$config{'tty'}' (cached)\n";
+	$port = $config{'tty'};
 
 } else {
 
 	$config{'tty'} = $^O =~ /Win32/i ? 'COM1' : '/dev/ttyS1';
-	my $port;
 
 	print "What is your serial port? [$config{'tty'}] ";
 	chomp( $port = <STDIN> );
