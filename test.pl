@@ -22,7 +22,7 @@ print "ok 1\n";
 
 
 # Load Makefile settings
-require '.config.pm';
+#require '.config.pm';
 
 # If non-win platforms and user is not root, skip tests
 # because they access serial port (only accessible under root user)
@@ -41,10 +41,30 @@ print "\n\n*** REMEMBER to run these tests as `root' (where required)!\n\n"
 
 sleep 1;
 
+$Device::Modem::port     = $ENV{'DEV_MODEM_PORT'};
+$Device::Modem::baudrate = $ENV{'DEV_MODEM_BAUD'} || 19200;
+
 if( $Device::Modem::port eq 'NONE' || $Device::Modem::port eq '' ) {
 
-	print "\n\n    [ No serial port set up, so no tests will be executed...\n";
-	print "    [ To enable tests, re-run `perl Makefile.PL' command.\n";
+	print <<NOTICE;
+
+    No serial port set up, so *NO* tests will be executed...
+    To enable full testing, you can set these environment vars:
+
+        DEV_MODEM_PORT=[your serial port]    (Ex.: 'COM1', '/dev/ttyS1', ...)
+        DEV_MODEM_BAUD=[serial link speed]   (default is 19200)
+
+    On most unix environments, this can be done running:
+
+        DEV_MODEM_PORT=/dev/modem DEV_MODEM_BAUD=19200 make test
+
+    On Win32 systems, you can do:
+
+        set DEV_MODEM_PORT=COM1
+        set DEV_MODEM_BAUD=19200
+        nmake test (or make test)
+
+NOTICE
 
 	print "skip $_\n" for (2..6);
 
@@ -52,8 +72,8 @@ if( $Device::Modem::port eq 'NONE' || $Device::Modem::port eq '' ) {
 
 } else {
 
-	print "Your serial port is `$Device::Modem::port' (configured by Makefile.PL)\n";
-	print "Link baud rate   is `$Device::Modem::baudrate' (configured by Makefile.PL)\n";
+	print "Your serial port is `$Device::Modem::port' (environment configured)\n";
+	print "Link baud rate   is `$Device::Modem::baudrate' (environment configured)\n";
 
 }
 
