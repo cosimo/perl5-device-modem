@@ -4,7 +4,7 @@ NAME
 
 WARNING
        This is C<ALPHA> software, still needs extensive testing and
-       support for generic AT commads, so use it at your own risk,
+       support for generic AT commands, so use it at your own risk,
        and without C<ANY> warranty! Have fun.
 
 SYNOPSIS
@@ -37,7 +37,7 @@ SYNOPSIS
                                     # Handle with care!
 
       $modem->send_init_string();   # Send initialization string
-                                    # Now this is fixed to `ATZ0H0V1Q0E0'
+                                    # Now this is fixed to 'AT H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4'
 
       $modem->repeat();             # Repeat last command
 

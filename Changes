@@ -33,3 +33,5 @@ Revision history for Perl extension Device::Modem.
         - better timing and less waits in AT commands
         - moved "PRE-ALPHA" to "ALPHA" :-)
 
+1.15  Tue Jun 04 23:20:12 CEST 2002
+	- modified makefile/test procedure to pass automated cpan tests
