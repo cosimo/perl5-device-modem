@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.37 2004-08-18 07:14:37 cosimo Exp $
+# $Id: Modem.pm,v 1.38 2004-08-18 07:21:31 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.37 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.38 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -560,7 +560,7 @@ sub atsend {
 sub _answer {
     my $me = shift;
     my($expect, $timeout) = @_;
-    my $time_slice = 250;                      # single cycle wait time
+    my $time_slice = 50;                       # single cycle wait time
 
     # If we expect something, we must first match against serial input
     my $done = (defined $expect and $expect ne '');
@@ -585,7 +585,7 @@ $me->log->write( debug => 'answer: end time set to '.$end_time );
 
     do {
 
-        my($howmany, $what) = $me->port->read(255);
+        my($howmany, $what) = $me->port->read(100);
 
         # Timeout count incremented only on empty readings
         if( defined $what && $howmany > 0 ) {
