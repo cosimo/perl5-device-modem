@@ -56,12 +56,18 @@ DESCRIPTION
 
   REQUIRES
 
-    Device::SerialPort
+    Device::SerialPort (Win32::SerialPort for Windows machines)
   EXPORT
 
     None
 
 TO-DO
+    *   Logging mechanism
+
+        Explain which type of logging hooks you can use with Device::Modem
+        and its sub-classes (Device::Gsm). For now, they are only `file' and
+        `syslog'
+
     *   AutoScan
 
         An AT command script with all interesting commands is run when
@@ -84,5 +90,6 @@ COPYRIGHT
     modify it under the same terms as Perl itself.
 
 SEE ALSO
-    the Device::SerialPort manpage, the perl manpage.
+    the Device::SerialPort manpage, the Win32::SerialPort manpage, the perl
+    manpage.
 

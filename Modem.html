@@ -97,7 +97,7 @@ based on serial connections.</P>
 <P>
 <H2><A NAME="requires">REQUIRES</A></H2>
 <DL>
-<DT><STRONG><A NAME="item_Device%3A%3ASerialPort">Device::SerialPort</A></STRONG><BR>
+<DT><STRONG><A NAME="item_SerialPort">Device::SerialPort (Win32::SerialPort for Windows machines)</A></STRONG><BR>
 <DD>
 </DL>
 <P>
@@ -107,6 +107,12 @@ based on serial connections.</P>
 <HR>
 <H1><A NAME="todo">TO-DO</A></H1>
 <UL>
+<LI>
+Logging mechanism
+<P>Explain which type of logging hooks you can use with Device::Modem
+and its sub-classes (Device::Gsm). For now, they are only `file'
+and `syslog'</P>
+<P></P>
 <LI>
 AutoScan
 <P>An AT command script with all interesting commands is run
@@ -134,7 +140,7 @@ modify it under the same terms as Perl itself.</P>
 <P>
 <HR>
 <H1><A NAME="see also">SEE ALSO</A></H1>
-<P><A HREF="/Device/SerialPort.html">the Device::SerialPort manpage</A>, <EM>perl</EM>.</P>
+<P><A HREF="/Device/SerialPort.html">the Device::SerialPort manpage</A>, <A HREF="/Win32/SerialPort.html">the Win32::SerialPort manpage</A>, <EM>perl</EM>.</P>
 
 </BODY>
 
