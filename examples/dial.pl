@@ -1,4 +1,4 @@
-# $Id: dial.pl,v 1.2 2004-02-18 21:49:54 cosimix Exp $
+# $Id: dial.pl,v 1.3 2005-04-30 21:45:47 cosimo Exp $
 #
 # This script tries to dial a number taken from STDIN
 # or as first argument.
@@ -29,7 +29,7 @@ if( $config{'tty'} ) {
 
 } else {
 
-	$config{'tty'} = $^O =~ /Win32/i ? 'COM1' : '/dev/ttyS1';
+	$config{'tty'} = $Device::Modem::DEFAULT_PORT; 
 
 	print "What is your serial port? [$config{'tty'}] ";
 	chomp( $port = <STDIN> );

@@ -6,7 +6,7 @@
 # ******************************************
 # If it does not work, try with baud = 9600
 #
-# $Id: shell.pl,v 1.5 2002-12-03 23:33:01 cosimo Exp $
+# $Id: shell.pl,v 1.6 2005-04-30 21:45:47 cosimo Exp $
 
 use strict;
 use Device::Modem;
@@ -16,11 +16,11 @@ if( $> && $< ) {
 	sleep 3;
 }
 
-print "Your serial port? [/dev/ttyS1]\n";
+print "Your serial port? [/dev/ttyS0]\n";
 my $port = <STDIN>;
 chomp $port;
 
-$port ||= '/dev/ttyS1';
+$port ||= '/dev/ttyS0';
 
 print "Your baud rate? [19200]\n";
 my $baud = <STDIN>;

@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.43 2004-11-10 09:20:04 cosimo Exp $
+# $Id: Modem.pm,v 1.44 2005-04-30 21:45:47 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.43 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.44 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -50,7 +50,7 @@ use constant CTRL_Z => chr(26);
 use constant CR => "\r";
 
 # Connection defaults
-$Device::Modem::DEFAULT_PORT = ( $^O =~ /Win/io ) ? 'COM1' : '/dev/modem';
+$Device::Modem::DEFAULT_PORT = index($^O, 'Win') >= 0 ? 'COM1' : '/dev/modem';
 $Device::Modem::BAUDRATE = 19200;
 $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
@@ -78,7 +78,7 @@ sub new {
     my $class = ref($proto) || $proto;      # Get reference to class
 
     $aOpt{'ostype'} = $^O;                  # Store OSTYPE in object
-    $aOpt{'ostype'} =~ /Win/io and $aOpt{'ostype'} = 'windoze';
+    $aOpt{'ostype'} = 'windoze' if index( $aOpt{'ostype'}, 'Win' ) >= 0;
 
     # Initialize flags array
     $aOpt{'flags'} = {};

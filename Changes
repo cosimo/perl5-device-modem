@@ -1,6 +1,10 @@
 Revision history for Perl extension Device::Modem.
 
-1.41  Sun Sep 19 21:12:10 CET 2004
+1.44  Sat Apr 30 23:29:03 CET 2005
+    - (again) now cygwin and darwin platforms should be detected correctly.
+      (thanks to Rob Johnson for reporting)
+
+1.42  Sun Sep 19 21:12:10 CET 2004
     - little fix for correct MacOSX os detection and SerialPort inclusion
       (thanks to Lidie Steve for reporting)
 

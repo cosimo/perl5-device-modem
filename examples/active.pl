@@ -1,4 +1,4 @@
-# $Id: active.pl,v 1.3 2004-02-18 21:49:53 cosimix Exp $
+# $Id: active.pl,v 1.4 2005-04-30 21:45:47 cosimo Exp $
 #
 # This script tries to test if modem is active (on and enabled)
 # If modem is not active, tries to reset it.
@@ -31,7 +31,7 @@ if( $config{'tty'} ) {
 
 } else {
 
-	$config{'tty'} = $^O =~ /Win32/i ? 'COM1' : '/dev/ttyS1';
+	$config{'tty'} = $Device::Modem::DEFAULT_PORT;
 
 	print "What is your serial port? [$config{'tty'}] ";
 	chomp( $port = <STDIN> );

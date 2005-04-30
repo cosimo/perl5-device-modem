@@ -34,7 +34,7 @@ if( $config{'tty'} ) {
 
 } else {
 
-	$config{'tty'} = $^O =~ /Win32/i ? 'COM1' : '/dev/ttyS1';
+	$config{'tty'} = $Device::Modem::DEFAULT_PORT;
 	my $port;
 
 	print "What is your serial port? [$config{'tty'}] ";

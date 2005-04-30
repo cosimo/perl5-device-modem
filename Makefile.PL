@@ -1,9 +1,9 @@
-# $Id: Makefile.PL,v 1.5 2002-06-05 09:51:55 Cosimo Exp $
+# $Id: Makefile.PL,v 1.6 2005-04-30 21:45:47 cosimo Exp $
 use ExtUtils::MakeMaker;
 
 #print "\n\n", '-' x 60, "\n", ' ' x 20, 'Device::Modem setup', "\n", '-' x 60, "\n\n";
 
-my $is_windoze = ( $^O =~ /Win/i );
+my $is_windoze = index($^O, 'Win') >= 0;
 
 #
 # my %config = configure();
@@ -112,7 +112,7 @@ HELP
 	# Write configuration file
 	if( open CONF, '>.config.pm' ) {
 
-		print CONF "# Device::Modem setup parameters\n# \$Id: Makefile.PL,v 1.5 2002-06-05 09:51:55 Cosimo Exp $\n\n";
+		print CONF "# Device::Modem setup parameters\n# \$Id: Makefile.PL,v 1.6 2005-04-30 21:45:47 cosimo Exp $\n\n";
 
 		foreach( sort keys %conf ) {
 			print CONF "\$Device::Modem::$_ = '$conf{$_}';\n";
