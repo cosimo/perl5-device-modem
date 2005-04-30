@@ -9,8 +9,8 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# Portions of this code are borrowed from TkUsr tcl program
-# published with the GPL by Ludovic Drolez (ldrolez@free.fr)
+# Portions of this code are adapted from TkUsr tcl program
+# published with the GPL by Ludovic Drolez (ldrolez@free.fr).
 # Here is his copyright and license statements:
 #
 #    TkUsr v0.80
@@ -32,10 +32,10 @@
 #    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.       
 #
 #
-# $Id: UsRobotics.pm,v 1.4 2005-01-16 21:55:22 cosimo Exp $
+# $Id: UsRobotics.pm,v 1.5 2005-04-30 21:45:23 cosimo Exp $
 
 package Device::Modem::UsRobotics;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.4 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.5 $ =~ /(\d)\.(\d+)/;
 
 use strict;
 use Device::Modem;
@@ -642,19 +642,38 @@ Device::Modem::UsRobotics - USR modems extensions to control self-mode
   use Device::Modem::UsRobotics;
 
   my $modem = new Device::Modem::UsRobotics( port => '/dev/ttyS1' );
+  $modem->connect( baudrate => 9600 );
+  my %info = $modem->messages_info();
+  print "There are $info{unreleased_voice_msg} unread voice messages on $info{stored_voice_msg} total\n";
+  print "There are $info{unreleased_fax_msg} unread fax messages on $info{stored_fax_msg} total\n";
 
-  if( $modem->connect( baudrate => 9600 ) ) {
-      print "connected!\n";
-  } else {
-      print "sorry, no connection with serial port!\n";
-  }
+  # Get details about message n. X
+  my %msg = $modem->message_info(1);
+        index type information attributes status day hour minute
+        callerid page addresshigh addresslow checksum
+  print 'This is a ', ($msg{type} == 2 ? 'voice' : 'fax'), 'message', "\n";
+  print 'It came from no. ', $msg{callerid}, "\n";
+  # ...
 
-=head1 TO BE COMPLETED FROM NOW.....
+  # Now clear all messages
+  $modem->clear_memory();
+
+=head1 WARNING
+
+This module is not documented yet, and it is a rough work in progress.
+Until now, it correctly reads voice/fax messages information, but when
+saving voice messages to disk, sometimes they are incorrectly decoded.
+
+So, if you need a working program, check out the good old TkUsr by
+Ludovic Drolez, unless you want to help develop Device::Modem::UsRobotics.
+
+=head1 DOCS TO BE COMPLETED FROM NOW.....
+
+Yes, I'm a bad boy :-)
 
 =head1 DESCRIPTION
 
-C<Device::Modem> class implements basic B<AT (Hayes) compliant> device abstraction.
-It can be inherited by sub classes (as C<Device::Gsm>), which are based on serial connections.
+Bla Bla Bla...
 
 =head1 METHODS
 
@@ -683,11 +702,6 @@ memory.
 =back
 
 
-=head1 FAQ
-
-There is a minimal FAQ document for this module online at
-L<http://www.streppone.it/cosimo/work/perl/CPAN/Device-Modem/FAQ.html>
-
 =head1 SUPPORT
 
 Please feel free to contact me at my e-mail address L<cosimo@cpan.org>
@@ -700,18 +714,16 @@ Cosimo Streppone, L<cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
-(C) 2002-2004 Cosimo Streppone, L<cosimo@cpan.org>
+(C) 2004-2005 Cosimo Streppone, L<cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-Device::SerialPort,
-Win32::SerialPort,
-Device::Gsm,
+Device::Modem,
 perl
 
 =cut
 
-# vim: set ts=4 sw=4 tw=120 nowrap nu
+# vim: set ts=4 sw=4 tw=0 nowrap nu
