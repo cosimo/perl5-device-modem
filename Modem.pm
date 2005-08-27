@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.44 2005-04-30 21:45:47 cosimo Exp $
+# $Id: Modem.pm,v 1.45 2005-08-27 12:52:11 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.44 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.45 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -158,7 +158,8 @@ sub dial {
     }
 
     # Remove all non number chars plus some others allowed
-    $number =~ s/[^0-9,\(\)\*\-\s]//g;
+    # Thanks to Pierre Hilson for pointing out the `#' sign
+    $number =~ s/[^0-9,\(\)\*\-#\s]//g;
 
     # Dial number and wait for response
     if( length $number == 1 ) {
