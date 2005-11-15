@@ -1,8 +1,15 @@
 Revision history for Perl extension Device::Modem.
 
+1.45  Tue Nov 15 22:29:40 CET 2005
+    - Added patch to make Xmodem work from Aaron Mitti <amitti at 10east dot com>.
+    - Now dial() accepts also '#' sign in numbers (thanks to Pierre Hilson).
+
 1.44  Sat Apr 30 23:29:03 CET 2005
     - (again) now cygwin and darwin platforms should be detected correctly.
       (thanks to Rob Johnson for reporting)
+    - added a preliminary version of Device::Modem::UsRobotics module,
+      that allows to access voice/fax messages stored on your UsRobotics
+      message modem. Read the (incomplete) docs for more details.
 
 1.42  Sun Sep 19 21:12:10 CET 2004
     - little fix for correct MacOSX os detection and SerialPort inclusion
