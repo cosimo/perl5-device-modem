@@ -9,10 +9,10 @@
 # testing and support for generic AT commads, so use it at your own risk,
 # and without ANY warranty! Have fun.
 #
-# $Id: Modem.pm,v 1.45 2005-08-27 12:52:11 cosimo Exp $
+# $Id: Modem.pm,v 1.46 2005-11-15 23:37:11 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.45 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.46 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -55,9 +55,10 @@ $Device::Modem::BAUDRATE = 19200;
 $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
 $Device::Modem::PARITY   = 'none';
-$Device::Modem::TIMEOUT  = 500;     # milliseconds;
+$Device::Modem::TIMEOUT  = 500;     # milliseconds
 $Device::Modem::WAITCYCLE= 50;
-$Device::Modem::READCHARS= 50;
+$Device::Modem::READCHARS= 130;
+$Device::Modem::WAITCMD  = 200;     # milliseconds
 
 # Setup text and numerical response codes
 @Device::Modem::RESPONSE = ( 'OK', undef, 'RING', 'NO CARRIER', 'ERROR', undef, 'NO DIALTONE', 'BUSY' );
@@ -171,7 +172,7 @@ sub dial {
     }
 
     # XXX Check response times here (timeout!)
-    my $ans = $self->answer(undef, $timeout * 1000 );
+    my $ans = $self->answer( qr/[A-Z]/, $timeout * 1000 );
 
     if( (index($ans,'CONNECT') > -1) || (index($ans,'RING') > -1) ) {
         $ok = 1;
@@ -549,7 +550,7 @@ sub atsend {
     # Write message on port
     $me->port->purge_all();
     $cnt = $me->port->write($msg);
-    $me->wait(400);
+    $me->wait($Device::Modem::WAITCMD);
 
     $me->port->write_drain() unless $me->ostype eq 'windoze';
     $me->log->write('debug', 'atsend: wrote '.$cnt.'/'.length($msg).' chars');
@@ -568,7 +569,7 @@ sub _answer {
     # If we expect something, we must first match against serial input
     my $done = (defined $expect and $expect ne '');
 
-$me->log->write('debug', 'answer: expecting ['.($expect||'').']'.($timeout ? ' or '.($timeout/1000).' seconds timeout' : '' ) );
+    $me->log->write('debug', 'answer: expecting ['.($expect||'').']'.($timeout ? ' or '.($timeout/1000).' seconds timeout' : '' ) );
 
     # Main read cycle
     my $cycles = 0;
@@ -578,12 +579,11 @@ $me->log->write('debug', 'answer: expecting ['.($expect||'').']'.($timeout ? ' o
     my $end_time   = 0;
 
     # If timeout was defined, check max time (timeout is in milliseconds)
-$me->log->write('debug', 'answer: timeout value is '.($timeout||'undef'));
+    $me->log->write('debug', 'answer: timeout value is '.($timeout||'undef'));
 
     if( defined $timeout && $timeout > 0 ) {
         $end_time = $start_time + ($timeout / 1000);
-
-$me->log->write( debug => 'answer: end time set to '.$end_time );
+        $me->log->write( debug => 'answer: end time set to '.$end_time );
     }
 
     do {
@@ -606,7 +606,13 @@ $me->log->write( debug => 'answer: end time set to '.$end_time );
         # Check if we reached max time for timeout (only if end_time is defined)
         } elsif( $end_time > 0 ) {
 
-            $done = time() >= $end_time ? 1 : 0;
+            $done = (time >= $end_time) ? 1 : 0;
+
+            # Read last chars in read queue
+            if( $done )
+            {
+                $me->log->write('info', 'reached timeout max wait without response');
+            }
 
         # Else we have done
         } else {
@@ -614,9 +620,9 @@ $me->log->write( debug => 'answer: end time set to '.$end_time );
             $done = 1;
         }
 
-$me->log->write('debug', 'done='.$done.' end_time='.$end_time.' now='.time().' start_time='.$start_time );
+        $me->log->write('debug', 'done='.$done.' end='.$end_time.' now='.time().' start='.$start_time );
 
-      } while (not $done);
+    } while (not $done);
 
     $me->log->write('info', 'answer: read ['.($answer||'').']' );
 
