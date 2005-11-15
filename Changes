@@ -1,6 +1,11 @@
 Revision history for Perl extension Device::Modem.
 
-1.45  Tue Nov 15 22:29:40 CET 2005
+1.46
+1.45  Tue Nov 15 23:29:40 CET 2005
+    - Fixed dial() now it does not wait for timeout in presence of a valid
+      remote response (NO CARRIER, BUSY, ...)
+    - Fine tuned answer read cycle times
+    - Added constant $Device::Modem::WAITCMD for wait time before issuing commands (atsend)
     - Added patch to make Xmodem work from Aaron Mitti <amitti at 10east dot com>.
     - Now dial() accepts also '#' sign in numbers (thanks to Pierre Hilson).
 
