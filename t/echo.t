@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..6\n"; }
+BEGIN { $| = 1; print "1..4\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use lib '..';
 use Modem;
@@ -63,9 +63,16 @@ if( $modem->connect ) {
 
 print '- testing echo enable/disable', "\n";
 my $lOk = 1;
-if( $modem->echo(1) ) {
 
-	print "\t", 'sending AT@@@ string...', "\n";
+if( ! $modem->echo(1) )
+{
+    print "not ok 3\n";
+    print "not ok 4\n";
+}
+else 
+{
+
+    print "ok 3\n", "\t", 'sending AT@@@ string...', "\n";
 
 	$modem->atsend('AT@@@'.Device::Modem::CR);
 	my $ans = $modem->answer();
@@ -84,12 +91,9 @@ if( $modem->echo(1) ) {
 	$lOk &&= ( $ans =~ /ERROR/ );
 
 	if( $lOk ) {
-		print "ok 7\n";
+		print "ok 4\n";
 	} else {
-		print "not ok 7\n";
+		print "not ok 4\n";
 	}
-
-} else {
-	print "not ok 7\n";
 }
 

@@ -1,7 +1,7 @@
 #
 # UsRobotics module test
 #
-# $Id: usrobotics.t,v 1.1 2006-04-20 19:17:32 cosimo Exp $
+# $Id: usrobotics.t,v 1.2 2006-04-20 20:19:22 cosimo Exp $
 
 use strict;
 use Test::More;
@@ -30,7 +30,7 @@ diag('mcc: ', $ans, "\n");
 ok(defined $ans && $ans ne '' && $ans =~ /[\d\,]+/, 'mcc command');
 
 # Test msr extension
-my $ans = $modem->msg_status();
+$ans = $modem->msg_status();
 diag('msr: ', $ans, "\n");
 ok($ans =~ /\d+,\d+,\d+,\d+/, 'message status ok');
 

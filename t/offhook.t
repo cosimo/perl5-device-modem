@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..6\n"; }
+BEGIN { $| = 1; print "1..3\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use lib '..';
 use Modem;
@@ -64,6 +64,7 @@ if( $modem->connect ) {
 }
 
 print 'testing offhook function...', "\n";
-print $modem->attention();
-print $modem->offhook();
+$modem->attention();
+
+print $modem->offhook() ? "ok 3\n" : "not ok 3\n";
 
