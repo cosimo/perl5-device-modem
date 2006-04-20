@@ -1,18 +1,21 @@
 # Device::Modem - a Perl class to interface generic modems (AT-compliant)
-#
-# Copyright (C) 2002-2004 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2002-2006 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
-# Additionally, this is ALPHA software, still needs extensive
-# testing and support for generic AT commads, so use it at your own risk,
-# and without ANY warranty! Have fun.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# Perl licensing terms for details.
 #
-# $Id: Modem.pm,v 1.46 2005-11-15 23:37:11 cosimo Exp $
+# Commercial support is available. Write me if you are
+# interested in new features or software support.
+#
+# $Id: Modem.pm,v 1.47 2006-04-20 20:24:05 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.46 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.47 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -56,12 +59,13 @@ $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
 $Device::Modem::PARITY   = 'none';
 $Device::Modem::TIMEOUT  = 500;     # milliseconds
-$Device::Modem::WAITCYCLE= 50;
+$Device::Modem::WAITCYCLE= 20;
 $Device::Modem::READCHARS= 130;
-$Device::Modem::WAITCMD  = 200;     # milliseconds
+$Device::Modem::WAITCMD  = 20; #100;     # milliseconds
 
 # Setup text and numerical response codes
 @Device::Modem::RESPONSE = ( 'OK', undef, 'RING', 'NO CARRIER', 'ERROR', undef, 'NO DIALTONE', 'BUSY' );
+$Device::Modem::STD_RESPONSE = qr/^(OK|ERROR)$/m;
 
 #%Device::Modem::RESPONSE = (
 #	'OK'   => 'Command executed without errors',
@@ -122,7 +126,6 @@ sub attention {
     $self->atsend('+++');
 
     # Wait 200 milliseconds
-    $self->wait(200);
     $self->answer();
 }
 
@@ -192,7 +195,7 @@ sub echo {
     $self->log->write( 'info', ( $lEnable ? 'enabling' : 'disabling' ) . ' echo' );
     $self->atsend( ($lEnable ? 'ATE1' : 'ATE0') . CR );
 
-    $self->answer('OK');
+    $self->answer($Device::Modem::STD_RESPONSE);
 }
 
 # Terminate current call (XXX not tested)
@@ -203,7 +206,7 @@ sub hangup {
     $self->attention();
     $self->atsend( 'ATH0' . CR );
     $self->_reset_flags();
-    $self->answer();
+    $self->answer(undef, 5000);
 }
 
 # Checks if modem is enabled (for now, it works ok for modem OFF/ON case)
@@ -276,7 +279,7 @@ sub S_register {
         $self->log->write('info', 'storing value ['.$new_value.'] into register S'.$register);
         $self->atsend( sprintf( 'AT S%02d=%d' . CR, $register, $new_value ) );
 
-        $value = ( index( $self->answer, 'OK' ) != -1 ) ? $new_value : undef;
+        $value = ( index( $self->answer(), 'OK' ) != -1 ) ? $new_value : undef;
 
     } else {
 
@@ -316,7 +319,7 @@ sub reset {
     $self->hangup();
     $self->send_init_string();
     $self->_reset_flags();
-    return $self->answer();
+#    return $self->answer();
 }
 
 # Return an hash with the status of main modem signals
@@ -352,7 +355,7 @@ sub restore_factory_settings {
     $self->log->write('warning', 'restoring factory settings '.$profile.' on '.$self->{'port'} );
     $self->atsend( 'AT&F'.$profile . CR);
 
-    $self->answer();
+    $self->answer($Device::Modem::STD_RESPONSE);
 }
 
 # Store telephone number in modem's internal address book, to dial later
@@ -394,7 +397,7 @@ sub verbose {
     $self->log->write( 'info', ( $lEnable ? 'enabling' : 'disabling' ) . ' verbose messages' );
     $self->atsend( ($lEnable ? 'ATQ0V1' : 'ATQ0V0') . CR );
 
-    $self->answer('OK');
+    $self->answer($Device::Modem::STD_RESPONSE);
 }
 
 sub wait {
@@ -434,7 +437,7 @@ sub send_init_string {
     $self->attention();
     $cInit = $self->options->{'init_string'} unless defined $cInit;
     $self->atsend('AT '.$cInit. CR );
-    $self->answer();
+    $self->answer($Device::Modem::STD_RESPONSE);
 }
 
 # returns log object reference or nothing if it is not defined
@@ -490,13 +493,23 @@ sub connect {
     # Non configurable options
     $oPort -> buffers         ( 10000, 10000 );
     $oPort -> handshake       ( 'none' );
-    $oPort -> read_const_time ( 100 );           # was 500
-    $oPort -> read_char_time  ( 10 );
+    $oPort -> read_const_time ( 20 );           # was 500
+    $oPort -> read_char_time  ( 0 );
+
+    # read_interval() seems to be unsupported on Device::SerialPort,
+    # while allowed on Win32::SerialPort...
+    if( $oPort->can('read_interval') )
+    {
+        $oPort->read_interval( 20 );
+    }
 
     $oPort -> are_match       ( 'OK' );
     $oPort -> lookclear;
 
-    $oPort -> write_settings;
+    unless ( $oPort -> write_settings ) {
+        $me->log->write( 'error', '*FAILED* write_settings on '.$me->{'port'} );
+        return $lOk;
+    }
     $oPort -> purge_all;
 
     $me-> log -> write('info', 'sending init string...' );
@@ -550,7 +563,7 @@ sub atsend {
     # Write message on port
     $me->port->purge_all();
     $cnt = $me->port->write($msg);
-    $me->wait($Device::Modem::WAITCMD);
+#    $me->wait($Device::Modem::WAITCMD);
 
     $me->port->write_drain() unless $me->ostype eq 'windoze';
     $me->log->write('debug', 'atsend: wrote '.$cnt.'/'.length($msg).' chars');
@@ -564,6 +577,7 @@ sub atsend {
 sub _answer {
     my $me = shift;
     my($expect, $timeout) = @_;
+    $timeout = $Device::Modem::TIMEOUT if (! defined($timeout));
     my $time_slice = $Device::Modem::WAITCYCLE;     # single cycle wait time
 
     # If we expect something, we must first match against serial input
@@ -583,11 +597,11 @@ sub _answer {
 
     if( defined $timeout && $timeout > 0 ) {
         $end_time = $start_time + ($timeout / 1000);
+        $end_time++ if $end_time == $start_time;
         $me->log->write( debug => 'answer: end time set to '.$end_time );
     }
 
     do {
-
         my($howmany, $what) = $me->port->read($Device::Modem::READCHARS);
 
         # Timeout count incremented only on empty readings
@@ -598,7 +612,10 @@ sub _answer {
 
             # Check if buffer matches "expect string"
             if( defined $expect ) {
-                $done = ( defined $answer && $answer =~ $expect ) ? 1 : 0;
+                my $copy = $answer;
+                $copy =~ s/\r(\n)?/\n/g; # Convert line endings from "\r" or "\r\n" to "\n"
+                $done = ( defined $copy && $copy =~ $expect ) ? 1 : 0;
+                $me->log->write( debug => 'answer: matched expect: '.$expect ) if ($done);
             }
 
             $me->wait($time_slice) unless $done;
@@ -1359,7 +1376,7 @@ Cosimo Streppone, L<cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
-(C) 2002-2004 Cosimo Streppone, L<cosimo@cpan.org>
+(C) 2002-2006 Cosimo Streppone, L<cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.

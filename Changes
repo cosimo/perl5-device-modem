@@ -1,5 +1,9 @@
 Revision history for Perl extension Device::Modem.
 
+1.47  Thu Apr 20 22:16:17 CET 2006
+    - Sensible speedup in the command/response cycle.
+      Thanks to Ed Wildgoose for his contribution.
+
 1.46
 1.45  Tue Nov 15 23:29:40 CET 2005
     - Fixed dial() now it does not wait for timeout in presence of a valid
