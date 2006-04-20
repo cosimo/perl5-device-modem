@@ -136,6 +136,12 @@ that you can take as (yea) examples:
 
 Tests if modem is alive
 
+=item `examples/caller-id.pl'
+
+Waits for an incoming call and displays date, time and phone number of the caller.
+Normally this is available everywhere, but you should check your local phone line
+and settings.
+
 =item `examples/dial.pl'
 
 Dials a phone number and display result of call
@@ -143,6 +149,15 @@ Dials a phone number and display result of call
 =item `examples/shell.pl'
 
 (Very) poor man's minicom/hyperterminal utility
+
+=item `examples/xmodem.pl'
+
+First attempt at a test script to receive a file via xmodem protocol.
+Please be warned that this thing does not have a chance to work. It's
+only a (very low priority) work in progress...
+
+If you want to help out, be welcome!
+
 
 =back
 
@@ -159,6 +174,10 @@ expected string is encountered. Example:
 Returns C<$answer> that is the string received from modem stripped of all
 B<Carriage Return> and B<Line Feed> chars B<only> at the beginning and at the end of the
 string. No in-between B<CR+LF> are stripped.
+
+Note that if you need the raw answer from the modem, you can use the _answer() (note
+that underscore char before answer) method, which does not strip anything from the response,
+so you get the real modem answer string.
 
 Parameters:
 
@@ -653,7 +672,7 @@ Cosimo Streppone, L<cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
-(C) 2002-2003 Cosimo Streppone, L<cosimo@cpan.org>
+(C) 2002-2006 Cosimo Streppone, L<cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.
@@ -664,7 +683,3 @@ Device::SerialPort,
 Win32::SerialPort,
 Device::Gsm,
 perl
-
-=cut
-
-
