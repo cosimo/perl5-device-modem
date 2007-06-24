@@ -1,3 +1,5 @@
+=pod
+
 =head1 NAME
 
 Device::Modem - Perl extension to talk to modem devices connected via serial port
@@ -612,8 +614,10 @@ Waits (yea) for a given amount of time (in milliseconds). Usage:
 Wait is implemented via C<select> system call.
 Don't know if this is really a problem on some platforms.
 
+=head2 write_drain()
 
-
+Only a simple wrapper around C<Device::SerialPort::write_drain> method.
+Disabled for Win32 platform, that doesn't have that.
 
 
 =head1 REQUIRES
@@ -672,7 +676,7 @@ Cosimo Streppone, L<cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
-(C) 2002-2006 Cosimo Streppone, L<cosimo@cpan.org>
+(C) 2002-2007 Cosimo Streppone, L<cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.
@@ -683,3 +687,5 @@ Device::SerialPort,
 Win32::SerialPort,
 Device::Gsm,
 perl
+
+=cut
