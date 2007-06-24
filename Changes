@@ -1,5 +1,9 @@
 Revision history for Perl extension Device::Modem.
 
+1.48  Sun Jun 24 09:30:16 CEST 2007
+    - atsend() method made more reliable with longer commands (ex. longer sms messages).
+      Thanks to Ben Knight for his bug report and patch.
+
 1.47  Thu Apr 20 22:16:17 CET 2006
     - Sensible speedup in the command/response cycle.
       Thanks to Ed Wildgoose for his contribution.

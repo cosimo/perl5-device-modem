@@ -1,5 +1,5 @@
 # Device::Modem - a Perl class to interface generic modems (AT-compliant)
-# Copyright (C) 2002-2006 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2002-2007 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -12,10 +12,10 @@
 # Commercial support is available. Write me if you are
 # interested in new features or software support.
 #
-# $Id: Modem.pm,v 1.47 2006-04-20 20:24:05 cosimo Exp $
+# $Id: Modem.pm,v 1.48 2007-06-24 08:23:10 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.47 $ =~ /(\d)\.(\d+)/;
+$VERSION = sprintf '%d.%02d', q$Revision: 1.48 $ =~ /(\d)\.(\d+)/;
 
 BEGIN {
 
@@ -563,13 +563,37 @@ sub atsend {
     # Write message on port
     $me->port->purge_all();
     $cnt = $me->port->write($msg);
-#    $me->wait($Device::Modem::WAITCMD);
 
-    $me->port->write_drain() unless $me->ostype eq 'windoze';
+    my $lbuf=length($msg);
+    my $ret;
+
+    while ($cnt < $lbuf)
+    {
+       $ret = $me->port->write(substr($msg, $cnt));
+       $me->write_drain();
+       last unless defined $ret;
+       $cnt += $ret;
+    }
+
     $me->log->write('debug', 'atsend: wrote '.$cnt.'/'.length($msg).' chars');
 
     # If wrote all chars of `msg', we are successful
     return $cnt == length $msg;
+}
+
+# Call write_drain() if platform allows to (no call for Win32)
+sub write_drain
+{
+    my $me = shift;
+
+    # No write_drain() call for win32 systems
+    return if $me->ostype eq 'windoze';
+
+    # No write_drain() if no port object available
+    my $port = $me->port;
+    return unless $port;
+
+    return $port->write_drain();
 }
 
 # answer() takes strings from the device until a pattern
@@ -1316,8 +1340,10 @@ Waits (yea) for a given amount of time (in milliseconds). Usage:
 Wait is implemented via C<select> system call.
 Don't know if this is really a problem on some platforms.
 
+=head2 write_drain()
 
-
+Only a simple wrapper around C<Device::SerialPort::write_drain> method.
+Disabled for Win32 platform, that doesn't have that.
 
 
 =head1 REQUIRES
@@ -1376,7 +1402,7 @@ Cosimo Streppone, L<cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
-(C) 2002-2006 Cosimo Streppone, L<cosimo@cpan.org>
+(C) 2002-2007 Cosimo Streppone, L<cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.

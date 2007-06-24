@@ -12,7 +12,7 @@ connected to your computer via a B<serial port>.
 
 Cosimo Streppone (L<cosimo@cpan.org>), an italian guy who works and
 enjoys writing perl programs and objects. If you want to know more,
-go to http://www.streppone.it/cosimo/work/
+go to http://www.streppone.it/cosimo/work/perl/
 
 =head2 BTW, what is L<Perl>?
 

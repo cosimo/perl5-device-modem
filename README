@@ -1,6 +1,6 @@
 =======================================================================
 Device::Modem - a Perl class to interface generic modems (AT-compliant)
-Copyright (C) 2002-2006 Cosimo Streppone, cosimo@cpan.org
+Copyright (C) 2002-2007 Cosimo Streppone, cosimo@cpan.org
 =======================================================================
 
 This is a perl extension to talk to AT compliant devices via serial port.
@@ -41,8 +41,7 @@ Licensing terms
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
-Additionally, this is BETA software, so use it at your own risk,
-and without ANY warranty!
+Use this software at your own risk without *ANY* warranty!
 For any need of commercial support and/or licensing, please contact
 me directly: Cosimo Streppone <cosimo@cpan.org>
 
