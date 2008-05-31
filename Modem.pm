@@ -9,9 +9,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # Perl licensing terms for details.
 #
-# Commercial support is available. Write me if you are
-# interested in new features or software support.
-#
 # $Id: Modem.pm,v 1.48 2007-06-24 08:23:10 cosimo Exp $
 
 package Device::Modem;
