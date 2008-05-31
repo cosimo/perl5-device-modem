@@ -462,6 +462,10 @@ sub _log {
 
 1;
 
+=head1 NAME
+
+Device::Modem::Protocol::Xmodem
+
 =head1 Xmodem::Block
 
 Class that represents a single Xmodem data block.
