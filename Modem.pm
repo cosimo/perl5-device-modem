@@ -15,7 +15,7 @@
 # $Id: Modem.pm,v 1.48 2007-06-24 08:23:10 cosimo Exp $
 
 package Device::Modem;
-$VERSION = sprintf '%d.%02d', q$Revision: 1.48 $ =~ /(\d)\.(\d+)/;
+$VERSION = '1.49';
 
 BEGIN {
 
@@ -59,9 +59,9 @@ $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
 $Device::Modem::PARITY   = 'none';
 $Device::Modem::TIMEOUT  = 500;     # milliseconds
-$Device::Modem::WAITCYCLE= 20;
+$Device::Modem::WAITCYCLE= 50;
 $Device::Modem::READCHARS= 130;
-$Device::Modem::WAITCMD  = 20; #100;     # milliseconds
+$Device::Modem::WAITCMD  = 200;     # milliseconds
 
 # Setup text and numerical response codes
 @Device::Modem::RESPONSE = ( 'OK', undef, 'RING', 'NO CARRIER', 'ERROR', undef, 'NO DIALTONE', 'BUSY' );

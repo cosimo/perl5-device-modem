@@ -1,5 +1,10 @@
 Revision history for Perl extension Device::Modem.
 
+1.49  Sat May 31 22:38:00 CEST 2008
+    - Changed default wait cycles and timeout to be more reliable with slow
+      devices after several user reports.
+    - Fixed man page for Xmodem.pm module. Incorporated fix from the debian package.
+
 1.48  Sun Jun 24 09:30:16 CEST 2007
     - atsend() method made more reliable with longer commands (ex. longer sms messages).
       Thanks to Ben Knight for his bug report and patch.
