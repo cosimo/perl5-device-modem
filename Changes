@@ -1,5 +1,8 @@
 Revision history for Perl extension Device::Modem.
 
+1.50  Tue Sep 30 22:59:00 CEST 2008
+    - Fixed use of wrong 'error' loglevel for SysLog plugin
+
 1.49  Sat May 31 22:38:00 CEST 2008
     - Changed default wait cycles and timeout to be more reliable with slow
       devices after several user reports.

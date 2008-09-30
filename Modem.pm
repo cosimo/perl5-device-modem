@@ -287,7 +287,7 @@ sub S_register {
             $self->log->write('info', 'value of S'.$register.' register seems to be ['.$value.']');
         } else {
             $value = undef;
-            $self->log->write('error', 'error reading value of S'.$register.' register');
+            $self->log->write('err', 'error reading value of S'.$register.' register');
         }
 
     }
@@ -476,7 +476,7 @@ sub connect {
 
     # Check connection
     unless( ref $me->port ) {
-        $me->log->write( 'error', '*FAILED* connect on '.$me->{'port'} );
+        $me->log->write( 'err', '*FAILED* connect on '.$me->{'port'} );
         return $lOk;
     }
 
@@ -504,7 +504,7 @@ sub connect {
     $oPort -> lookclear;
 
     unless ( $oPort -> write_settings ) {
-        $me->log->write( 'error', '*FAILED* write_settings on '.$me->{'port'} );
+        $me->log->write('err', '*FAILED* write_settings on '.$me->{'port'} );
         return $lOk;
     }
     $oPort -> purge_all;
