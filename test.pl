@@ -93,8 +93,6 @@ my $not_connected_guess;
 my $port = $Device::Modem::port;
 my $baud = $Device::Modem::baudrate;
 
-# test syslog logging
-# my $modem = new Device::Modem( port => $port, log => 'syslog', loglevel => 'debug' );
 my $modem = new Device::Modem( port => $port, log => 'file,test.log', loglevel => 'info' );
 
 if( $modem->connect(baudrate => $baud) ) {
