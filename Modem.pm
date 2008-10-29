@@ -9,10 +9,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # Perl licensing terms for details.
 #
-# $Id: Modem.pm,v 1.48 2007-06-24 08:23:10 cosimo Exp $
+# $Id$
 
 package Device::Modem;
-$VERSION = '1.49';
+$VERSION = '1.50';
 
 BEGIN {
 
