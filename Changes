@@ -1,5 +1,9 @@
 Revision history for Perl extension Device::Modem.
 
+1.51  Sun Jul  5 09:46:08 CEST 2009
+    - Fixed documentation for answer() method, timeout was declared
+	  to be in seconds instead of milliseconds. Thanks to Mikko Puisto for reporting.
+
 1.50  Tue Sep 30 22:59:00 CEST 2008
     - Fixed use of wrong 'error' loglevel for SysLog plugin
 

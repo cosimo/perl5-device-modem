@@ -138,6 +138,14 @@ In case of doubt, send the output of:
 
 Thank you.
 
+=head2 Do XModem transfers work?
+
+Probably not. It was experimental, and I never managed to test it.
+Some users reported it working, though.
+
+Otherwise, just look at Aaron Mitti's Device::SerialPort::Xmodem
+CPAN module.
+
 =head2 Why I keep getting "can't open device: /dev/xxxxx at .../Modem.pm line 468" errors ?
 
 First of all, be sure to use B<Device::Modem version 1.35+>.

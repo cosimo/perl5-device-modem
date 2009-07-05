@@ -1,5 +1,5 @@
 # Device::Modem - a Perl class to interface generic modems (AT-compliant)
-# Copyright (C) 2002-2008 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2002-2009 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -12,7 +12,7 @@
 # $Id$
 
 package Device::Modem;
-$VERSION = '1.50';
+$VERSION = '1.51';
 
 BEGIN {
 
@@ -915,8 +915,8 @@ modem is matched against this parameter. If input matches, result is returned.
 
 =item *
 
-C<$timeout> - Expressed in seconds. After that time, answer returns result also if nothing
-has been received. Example: C<10>. Default: C<0.2>
+C<$timeout> - Expressed in milliseconds. After that time, answer returns result also if nothing
+has been received. Example: C<10000>. Default: C<$Device::Modem::TIMEOUT>, currently 500 ms.
 
 =back
 

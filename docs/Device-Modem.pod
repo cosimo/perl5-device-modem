@@ -192,8 +192,8 @@ modem is matched against this parameter. If input matches, result is returned.
 
 =item *
 
-C<$timeout> - Expressed in seconds. After that time, answer returns result also if nothing
-has been received. Example: C<10>. Default: C<0.2>
+C<$timeout> - Expressed in milliseconds. After that time, answer returns result also if nothing
+has been received. Example: C<10000>. Default: C<$Device::Modem::TIMEOUT>, currently 500 ms.
 
 =back
 
@@ -689,3 +689,4 @@ Device::Gsm,
 perl
 
 =cut
+
