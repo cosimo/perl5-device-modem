@@ -14,9 +14,16 @@ WriteMakefile(
 	'ABSTRACT_FROM' => 'Modem.pm',
 	'NAME'	        => 'Device::Modem',
 	'VERSION_FROM'	=> 'Modem.pm',
-	'PREREQ_PM'	=> $is_windoze
-                ? { 'Win32::SerialPort'   => 0 }
-                : { 'Device::SerialPort'  => 0 }
+	'PREREQ_PM'		=> $is_windoze
+                       ? { 'Win32::SerialPort'   => 0 }
+                       : { 'Device::SerialPort'  => 0 },
+	'META_MERGE'    => {
+		resources => {
+			repository => 'git://github.com/cosimo/perl5-device-modem.git',
+			bugtracker => 'mailto:bug-device-modem@rt.cpan.org',
+			license    => 'http://dev.perl.org/licenses/',
+		},
+	},
 );
 
 sub configure {
