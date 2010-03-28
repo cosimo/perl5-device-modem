@@ -68,7 +68,7 @@ if( $Device::Modem::port eq 'NONE' || $Device::Modem::port eq '' ) {
 
 NOTICE
 
-	print "skip $_\n" for (2..6);
+	print "skip $_\n" for (2..15);
 
 	exit;
 
