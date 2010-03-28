@@ -140,30 +140,44 @@ Thank you.
 
 =head2 Do XModem transfers work?
 
-Probably not. It was experimental, and I never managed to test it.
-Some users reported it working, though.
+This is definitely reported to be working by several users, who
+also contributed patches and tested the feature.
 
 Otherwise, just look at Aaron Mitti's Device::SerialPort::Xmodem
 CPAN module.
 
+=head2 XModem sucks. What about ZModem?
+
+It might seem that XModem and ZModem should be well over dead at this point.
+But, looks like several old/new devices still support them.
+
+So, B<ZModem> support has been contributed by a user, and will be
+added to the main release Soon(tm).
+
 =head2 Why I keep getting "can't open device: /dev/xxxxx at .../Modem.pm line 468" errors ?
 
-First of all, be sure to use B<Device::Modem version 1.35+>.
+First of all, be sure to use B<Device::Modem version 1.52+>.
+
 Probably you don't have the correct permissions to access your modem device
 (usually /dev/modem, or /dev/ttyS0 on unix and COM1/COM2/... on windows).
 Or you are trying to use the examples that come with Device::Modem distribution
 with an older version (Device::Modem <= 1.33).
-In this case, you should upgrade to Device::Modem 1.35+.
+
+In this case, you should upgrade to Device::Modem 1.52+.
 
 =head2 Why I get the error "Can't call method "purge_all" on an undefined value at .../Modem.pm line 545" ?
 
-Again, B<upgrade to Device::Modem version 1.35+>.
+Again, B<upgrade to Device::Modem version 1.52+>.
+
 If you get this error, it means that the communication port could not be opened.
 Most probably you don't have permissions to access your serial port, or you have
 used a wrong device name (check your device entry in C</dev> folder).
-Maybe you are trying to use the examples that come with Device::Modem distribution
-with an older version (Device::Modem <= 1.33).
-In this case, you should upgrade to Device::Modem 1.35+.
+
+Since version 1.52, C<Device::Modem::connect()> will try to automatically reconnect
+if your port connection shuts down, or the C<Device::SerialPort>, or C<Win32::SerialPort>
+underlying object is deleted or invalidated.
+
+You should really upgrade to Device::Modem 1.52+.
 
 =head2 This module is pretty slow. What can I do?
 
