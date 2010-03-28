@@ -1,5 +1,10 @@
 Revision history for Perl extension Device::Modem.
 
+1.52  Sun Mar 28 15:50:00 CET  2010
+	- Added automatic port reconnection in the port() method.
+	  This should improve connection reliability and reduce risk
+	  of "Can't call method XXXXXX on undefined value YYYYYY" errors.
+
 1.51  Sun Jul  5 09:46:08 CEST 2009
     - Fixed documentation for answer() method, timeout was declared
 	  to be in seconds instead of milliseconds. Thanks to Mikko Puisto for reporting.
