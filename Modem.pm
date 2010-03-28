@@ -1,5 +1,5 @@
 # Device::Modem - a Perl class to interface generic modems (AT-compliant)
-# Copyright (C) 2002-2009 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2002-2010 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -12,7 +12,7 @@
 # $Id$
 
 package Device::Modem;
-$VERSION = '1.51';
+$VERSION = '1.52';
 
 BEGIN {
 
@@ -42,11 +42,10 @@ BEGIN {
 }
 
 use strict;
+use Carp ();
 
 # Constants definition
 use constant CTRL_Z => chr(26);
-
-# TODO: Allow to redefine CR to "\r", "\n" or "\r\n"
 use constant CR => "\r";
 
 # Connection defaults
@@ -540,9 +539,39 @@ sub options {
 
 # returns Device::SerialPort object handle
 sub port {
-    my $self = shift();
-    @_ ? $self->{'_comm_object'} = shift()
-      : $self->{'_comm_object'};
+    my $self = shift;
+
+    if (@_) {
+        return ($self->{'_comm_object'} = shift);
+    }
+
+    my $port_obj = $self->{'_comm_object'};
+
+    # Maybe the port was disconnected?
+    if ($self->{'CONNECTED'} == 1 &&                # We were connected
+        (! defined $port_obj || ! $port_obj)) {     # Now we aren't anymore
+
+        # Avoid recursion on ourselves
+        $self->{'CONNECTED'} = 0;
+
+        # Try to reconnect if possible
+        my $connect_options = $self->options;
+
+        # No connect options probably because we didn't ever connect
+        if (! $connect_options) {
+            Carp::croak("Not connected");
+        }
+
+        $self->connect(%{ $connect_options });
+        $port_obj = $self->{'_comm_object'};
+    }
+
+    # Still not connected? bail out
+    if (! defined $port_obj || ! $port_obj) {
+        Carp::croak("Not connected");
+    }
+
+    return $port_obj;
 }
 
 # disconnect serial port
@@ -1199,7 +1228,6 @@ C<$result> would hold "C<OK>" and C<@lines> would consist of only 1 line with
 the string "C<US Robotics 56K Message>".
 
 
-
 =head2 port()
 
 Used internally. Accesses the C<Device::SerialPort> underlying object. If you need to
@@ -1207,6 +1235,12 @@ experiment or do low-level serial calls, you may want to access this. Please rep
 any usage of this kind, because probably (?) it is possible to include it in a higher
 level method.
 
+As of 1.52, C<port()> will automatically try to reconnect if it detects
+a bogus underlying port object. It will reconnect with the same options used
+when C<connect()>ing the first time.
+
+If no connection has taken place yet, then B<no automatic reconnection>
+will be attempted.
 
 =head2 repeat()
 
@@ -1399,7 +1433,7 @@ Cosimo Streppone, L<cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
-(C) 2002-2007 Cosimo Streppone, L<cosimo@cpan.org>
+(C) 2002-2010 Cosimo Streppone, L<cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.
