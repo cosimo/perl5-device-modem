@@ -179,6 +179,13 @@ underlying object is deleted or invalidated.
 
 You should really upgrade to Device::Modem 1.52+.
 
+=head2 Can I make voice calls with this modem?
+
+B<No>. What you can do, is voice call B<dialing>.
+After the dialing though, you have to speak.
+Your computer can not do that, unless you have a PBX board,
+at least not with Device::Modem.
+
 =head2 This module is pretty slow. What can I do?
 
 Make sure you are using that latest version. From version 1.30, the main "send-command" / "wait-answer"
