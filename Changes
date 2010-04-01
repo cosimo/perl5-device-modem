@@ -1,5 +1,16 @@
 Revision history for Perl extension Device::Modem.
 
+1.53  Thu Apr 01 13:49:00 CET  2010
+    - ***CHANGED*** default log file position
+      from /var/log/modem.log to /tmp/modem.log.
+      Too many failed tests and user reports made me
+      reconsider my poor default choice.
+    - Added voice dialing. Just dialing though.
+      You can't perform real voice calls through Device::Modem (yet :)
+      Thanks to Marek Jaros.
+    - Added ';' (voice dialing) and 'p' (pause) as valid values
+      for dial() number.
+
 1.52  Sun Mar 28 15:50:00 CET  2010
 	- Added automatic port reconnection in the port() method.
 	  This should improve connection reliability and reduce risk

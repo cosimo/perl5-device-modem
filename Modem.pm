@@ -8,11 +8,9 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # Perl licensing terms for details.
-#
-# $Id$
 
 package Device::Modem;
-$VERSION = '1.52';
+$VERSION = '1.53';
 
 BEGIN {
 
@@ -125,31 +123,34 @@ sub attention {
     $self->answer();
 }
 
-#
-# Dial telephone number
-#
-# dial( number, timeout )
-# example: dial( '0289011124', 45 ) (timeout in seconds)
-#
-# if number to dial is 1-digit, takes number from address book
-# [ see store_number() ]
-#
 sub dial {
-    my($self, $number, $timeout) = @_;
+    my($self, $number, $timeout, $mode) = @_;
     my $ok = 0;
 
     # Default timeout in seconds
     $timeout ||= 30;
 
+    # Default is data calls
+    if (! defined $mode) {
+        $mode = 'DATA';
+    }
+    # Numbers with ';' mean voice calls
+    elsif ($mode =~ m{VOICE}i || $number =~ m{;}) {
+        $mode = 'VOICE';
+    }
+    # Invalid input, or explicit 'DATA' call 
+    else {
+        $mode = 'DATA';
+    }
+
     # Check if we have already dialed some number...
-    if( $self->flag('CARRIER') ) {
+    if ($self->flag('CARRIER')) {
         $self->log->write( 'warning', 'line is already connected, ignoring dial()' );
         return;
     }
 
     # Check if no number supplied
-    if( ! defined $number ) {
-
+    if (! defined $number) {
         #
         # XXX Here we could enable ATDL command (dial last number)
         #
@@ -158,16 +159,24 @@ sub dial {
     }
 
     # Remove all non number chars plus some others allowed
-    # Thanks to Pierre Hilson for pointing out the `#' sign
-    $number =~ s/[^0-9,\(\)\*\-#\s]//g;
+    # Thanks to Pierre Hilson for the `#' (UMTS)
+    # and to Marek Jaros for the `;' (voice calls)
+    $number =~ s{[^0-9,\(\)\*\-#;\sp]}{}g;
+
+    my $suffix = '';
+    if ($mode eq 'VOICE') {
+        $self->log->write('info', 'trying to make a voice call');
+        $suffix = ';';
+    }
 
     # Dial number and wait for response
     if( length $number == 1 ) {
         $self->log->write('info', 'dialing address book number ['.$number.']' );
-        $self->atsend( 'ATDS' . $number . CR );
+        
+        $self->atsend( 'ATDS' . $number . $suffix . CR );
     } else {
         $self->log->write('info', 'dialing number ['.$number.']' );
-        $self->atsend( 'ATDT' . $number . CR );
+        $self->atsend( 'ATDT' . $number . $suffix . CR );
     }
 
     # XXX Check response times here (timeout!)
@@ -1032,47 +1041,99 @@ This parameter is handled directly by C<Device::SerialPort> object.
 
 =head2 dial()
 
-Takes the modem off hook, dials the specified number and returns modem answer.
+Dials a telephone number. Can perform both voice and data calls.
+
 Usage:
 
-	# Simple usage (timeout is optional)
-	$ok = $modem->dial( $number [,$timeout] )
+	$ok = $modem->dial($number);
+    $ok = $modem->dial($number, $timeout);
+    $ok = $modem->dial($number, $timeout, $mode);
+
+Takes the modem off hook, dials the specified number and returns
+modem answer.
+
+Regarding voice calls, you B<will not> be able to send your voice through.
+You probably have to connect an analog microphone, and just speak.
+Or use a GSM phone. For voice calls, a simple C<;> is appended to the
+number to be dialed.
+
+If the number to dial is 1 digit only, extracts the number from the address book, provided your device has one. See C<store_number()>.
+
+Examples:
+
+	# Simple usage. Timeout and mode are optional.
+    $ok = $mode->dial('123456789');
 
 	# List context: allows to get at exact modem answer
 	# like `CONNECT 19200/...', `BUSY', `NO CARRIER', ...
-	($ok, $answer) = $modem->dial( $number [,$timeout] )
+    # Also, 30 seconds timeout
+	($ok, $answer) = $modem->dial('123456789', 30);
 
-If called in B<scalar context>, returns only success of connection. If modem answer
-contains C<CONNECT> string, C<dial()> returns successful state, else false value
-is returned.
+If called in B<scalar context>, returns only success of connection.
+If modem answer contains the C<CONNECT> string, C<dial()> returns
+successful state, otherwise a false value is returned.
 
-If called in B<list context>, returns the same C<$ok> flag, but also the exact
-modem answer to the dial operation in the C<$answer> scalar. C<$answer> typically
-can contain strings like C<CONNECT 19200> or C<NO CARRIER>, C<BUSY>, ... all standard
-modem answers to a dial command.
+If called in B<list context>, returns the same C<$ok> flag, but also the
+exact modem answer to the dial operation in the C<$answer> scalar.
+C<$answer> typically can contain strings like:
+
+=over 4
+
+=item C<CONNECT 19200>
+
+=item C<NO CARRIER>
+
+=item C<BUSY>
+
+=back
+
+and so on ... all standard modem answers to a dial command.
 
 Parameters are:
 
 =over 4
 
-=item *
+=item C<$number>
 
-C<$number> - this is the phone number to dial. If C<$number> is only 1 digit, it is interpreted
-as: B<dial number in my address book position C<$number>>. So if your code is:
+B<mandatory>, this is the phone number to dial.
+If C<$number> is only 1 digit, it is interpreted as:
+B<dial number in my address book position C<$number>>.
+
+So if your code is:
 
 	$modem->dial( 2, 10 );
 
-This means: dial number in the modem internal address book (see C<store_number> for a way to
-read/write address book) in position number B<2> and wait for a timeout of B<10> seconds.
+This means: dial number in the modem internal address book
+(see C<store_number> for a way to read/write address book)
+in position number B<2> and wait for a timeout of B<10> seconds.
 
-=item *
+=item C<$timeout>
 
-C<$timeout> - timeout expressed in seconds to wait for the remote device to answer.
-Please do not expect an B<exact> wait for the number of seconds you specified. I'm still
-studying how to do that exactly.
+B<optional>, default is B<30 seconds>.
+
+Timeout expressed in seconds to wait for the remote device
+to answer. Please do not expect an B<exact> wait for the number of
+seconds you specified.
+
+=item C<$mode>
+
+B<optional>, default is C<DATA>, as string.
+Allows to specify the type of call. Can be either:
+
+=over 4
+
+=item C<DATA> (default)
+
+To perform a B<data call>.
+
+=item C<VOICE>
+
+To perform a B<voice call>, if your device supports it.
+No attempt to verify whether your device can do that will be made.
 
 =back
 
+=back
 
 =head2 disconnect()
 
