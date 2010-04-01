@@ -52,17 +52,16 @@ sub new {
 	return $self;
 }
 
-# provide a suitable filename default
-sub default_filename() {
-	my $cDir = '/var/log';
+# Provide a suitable filename default
+sub default_filename () {
+	my $dir = '/tmp';
 
-	# If this is windoze (XXX 2000/XP? WINBOOTDIR?), not darwin, cygwin, ...
-	if( index($^O, 'Win') >= 0 ) {
-		$cDir = $ENV{'WINBOOTDIR'} || '/windows';
-		$cDir .= '/temp';
+	# If this is windows, use the temp/tmp dirs
+	if (exists $ENV{'TEMP'} || exists $ENV{'TMP'}) {
+		$dir = $ENV{'TEMP'} || $ENV{'TMP'};
 	}
 
-	return $cDir.'/modem.log';
+	return "$dir/modem.log";
 }
 
 sub filename {
@@ -140,7 +139,7 @@ Device::Modem::Log::File - Text files logging plugin for Device::Modem class
   use Device::Modem;
 
   my $box = Device::Modem->new( log => 'file', ... );
-  my $box = Device::Modem->new( log => 'file,name=/var/log/mymodem.log', ... );
+  my $box = Device::Modem->new( log => 'file,name=/tmp/mymodem.log', ... );
   ...
 
 =head1 DESCRIPTION
@@ -149,9 +148,9 @@ This is meant for an example log class to be hooked to C<Device::Modem>
 to provide one's favourite logging mechanism.
 You just have to implement your own C<new()>, C<write()> and C<close()> methods.
 
-Default text file is C</var/log/modem.log>. On Windows platforms, this
-goes into C<%WINBOOTDIR%/temp/modem.log>. By default, if the folder of the
-log file does not exist, it is created.
+Default text file is C</tmp/modem.log>. On Windows platforms, this
+goes into C<%TEMP%/modem.log> or C<%TMP%/modem.log>, whichever is defined.
+By default, if the folder of the log file does not exist, it is created.
 
 This class is loaded automatically by C<Device::Modem> class when an object
 is instantiated, and it is the B<default> logging mechanism for
