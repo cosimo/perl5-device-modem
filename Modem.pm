@@ -219,7 +219,7 @@ sub is_active {
     my $self = shift;
     my $lOk;
 
-    $self->log->write('info', 'testing modem activity on port '.$self->options->{'port'} );
+    $self->log->write('info', 'testing modem activity on port ' . ($self->options->{'port'} || '') );
 
     # Modem is active if already connected to a line
     if( $self->flag('CARRIER') ) {
