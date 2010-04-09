@@ -82,6 +82,9 @@ sub new {
     # Initialize flags array
     $aOpt{'flags'} = {};
 
+    # Start as not connected
+    $aOpt{'CONNECTED'} = 0;
+
     $aOpt{'port'} ||= $Device::Modem::DEFAULT_PORT;
 
     # Instance log object
