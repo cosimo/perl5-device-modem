@@ -14,205 +14,16 @@
 # This Xmodem protocol version is indeed very alpha code,
 # probably does not work at all, so stay tuned...
 #
-# $Id$
+# $Id: Xmodem.pm 182 2008-10-29 21:39:16Z Cosimo $
+
+use Device::Modem::Protocol::ModemUtility;
 
 package Xmodem::Constants;
-
-# Define constants used in xmodem blocks
-sub nul        () { 0x00 } # ^@
-sub soh        () { 0x01 } # ^A
-sub stx        () { 0x02 } # ^B
-sub eot        () { 0x04 } # ^D
-sub ack        () { 0x06 } # ^E
-sub nak        () { 0x15 } # ^U
-sub can        () { 0x18 } # ^X
-sub C          () { 0x43 }
-sub ctrl_z     () { 0x1A } # ^Z
-
-sub CHECKSUM   () { 1 }
-sub CRC16      () { 2 }
-sub CRC32      () { 3 }
 
 sub XMODEM     () { 0x01 }
 sub XMODEM_1K  () { 0x02 }
 sub XMODEM_CRC () { 0x03 }
 
-#sub YMODEM     () { 0x04 }
-#sub ZMODEM     () { 0x05 }
-
-package Xmodem::Block;
-
-use overload q[""] => \&to_string;
-
-# Create a new block object
-sub new {
-    my($proto, $num, $data, $length) = @_;
-    my $class = ref $proto || $proto;
-
-    # Define block type (128 or 1k chars) if not specified
-    $length ||= ( length $data > 128 ? 1024 : 128 );
-
-    # Define structure of a Xmodem transfer block object
-    my $self = {
-        number  => defined $num ? $num : 0,
-        'length'=> $length,
-        data    => defined $data ? substr($data, 0, $length) : "",      # Blocks are limited to 128 or 1024 chars
-      };
-
-    bless $self, $class;
-}
-
-# Calculate checksum of current block data
-sub checksum {
-    my $self = $_[0];
-    my $sum  = 0;
-    foreach my $c ( $self->data() ) {
-        $sum += ord $c;
-        $sum %= 256;
-    }
-    return $sum % 256;
-}
-
-# Calculate CRC 16 bit on block data
-sub crc16 {
-    my $self = $_[0];
-    return unpack('%C16*' => $self->data()) % 65536;
-}
-
-# Calculate CRC 32 bit on block data
-sub crc32 {
-    my $self = $_[0];
-    return unpack('%C32' => $self->data());
-}
-
-# Return data one char at a time
-sub data {
-    my $self = $_[0];
-    return wantarray
-      ? split(//, $self->{data})
-      : substr($self->{data}, 0, $self->{'length'})
-}
-
-sub number {
-    my $self = $_[0];
-    return $self->{number};
-}
-
-# Calculate checksum/crc for the current block and stringify block for transfer
-sub to_string {
-    my $self = $_[0];
-    my $block_num = $self->number();
-
-    # Assemble block to be transferred
-    my $xfer = pack(
-
-        'cccA'.$self->{'length'}.'c',
-
-        $self->{'length'} == 128
-        ? Xmodem::Constants::soh   # Start Of Header (block size = 128)
-        : Xmodem::Constants::stx,  # Start Of Text   (block size = 1024)
-
-        $block_num,                    # Block number
-
-        $block_num ^ 0xFF,             # 2's complement of block number
-
-        scalar $self->data,            # Data chars
-
-        $self->checksum()              # Final checksum (or crc16 or crc32)
-          # TODO crc16, crc32 ?
-      );
-
-    return $xfer;
-}
-
-#
-# verify( type, value )
-# ex.: verify( 'checksum', 0x7F )
-# ex.: verify( 'crc16', 0x8328 )
-#
-sub verify {
-    my($self, $type, $value) = @_;
-
-    # Detect type of value to be checked
-
-    # TODO use new constants
-
-    $type = 'checksum' unless defined $type;
-
-    if( $type eq 'checksum' ) {
-        $good_value = $self->checksum();
-    } elsif( $type eq 'crc16' ) {
-        $good_value = $self->crc16();
-    } elsif( $type eq 'crc32' ) {
-        $good_value = $self->crc32();
-    } else {
-        $good_value = $self->checksum();
-    }
-    print 'value:', $value, 'goodvalue:', $good_value;
-    return $good_value == $value;
-}
-
-# ----------------------------------------------------------------
-
-package Xmodem::Buffer;
-
-sub new {
-    my($proto, $num, $data) = @_;
-    my $class = ref $proto || $proto;
-
-    # Define structure of a Xmodem transfer buffer
-    my $self = [];
-    bless($self);
-    return $self;
-}
-
-# Push, pop, operations on buffer
-sub push {
-    my $self  = $_[0];
-    my $block = $_[1];
-    push @$self, $block;
-}
-
-sub pop {
-    my $self = $_[0];
-    pop @$self
-}
-
-# Get last block on buffer (to retransmit / re-receive)
-sub last {
-    my $self = $_[0];
-    return $self->[ $#$self ];
-}
-
-sub blocks {
-    return @{$_[0]};
-}
-
-#
-# Replace n-block with given block object
-#
-sub replace {
-    my $self  = $_[0];
-    my $num   = $_[1];
-    my $block = $_[2];
-
-    $self->[$num] = $block;
-}
-
-sub dump {
-    my $self = $_[0];
-    my $output;
-
-    # Join all blocks into string
-    for (my $pos = 0; $pos < scalar($self->blocks()); $pos++) {
-        $output .= $self->[$pos]->data();
-    }
-
-    # Clean out any end of file markers (^Z) in data
-    $output =~ s/\x1A*$//;
-
-    return $output;
-}
 
 # ----------------------------------------------------------------
 
@@ -223,15 +34,14 @@ sub TIMEOUT_CRC      () {  3 };
 sub TIMEOUT_CHECKSUM () { 10 };
 
 our $TIMEOUT = TIMEOUT_CRC;
-our $DEBUG   = 1;
 
 sub abort_transfer {
     my $self = $_[0];
 
     # Send a cancel char to abort transfer
-    _log('aborting transfer');
-    $self->modem->atsend( chr(Xmodem::Constants::can) );
-    $self->modem->port->write_drain() unless $self->modem->ostype() eq 'windoze';
+    ModemUtility::Misc::log('aborting transfer');
+    $self->modem->atsend( chr(ModemUtility::Constants::can) );
+    ModemUtility::Misc::write_drain($self->modem) unless $self->modem->ostype() eq 'windoze';
     $self->{aborted} = 1;
     return 1;
 }
@@ -245,7 +55,7 @@ sub new {
     my $class = ref $proto || $proto;
 
     # Create `modem' object if does not exist
-    _log('opt{modem} = ', $opt{modem});
+    ModemUtility::Misc::log('opt{modem} = ', $opt{modem});
     if( ! exists $opt{modem} ) {
         require Device::Modem;
         $opt{modem} = Device::Modem->new();
@@ -256,6 +66,7 @@ sub new {
         _filename => $opt{filename} || 'received.dat',
         current_block => 0,
         timeouts  => 0,
+        protocol  => $opt{protocol} || Xmodem::Constants::XMODEM,
       };
 
     bless $self, $class;
@@ -270,27 +81,60 @@ sub modem {
 # Try to receive a block. If receive is correct, push a new block on buffer
 #
 sub receive_message {
-    my $self = $_[0];
+    my $self                = $_[0];
     my $message_type;
-    my $message_number = 0;
-    my $message_complement = 0;
+    my $message_number      = 0;
+    my $message_complement  = 0;
     my $message_data;
     my $message_checksum;
+    my $count_in            = 0;
+    my $done                = 0;
+    my $error               = 0;
+    my $received            = undef;
+    my $read_size           = 132;
+    my $sum_size            = 1;
+
+    # XMODEM_CRC use 133 bytes retrieve
+    if ($self->{protocol} == Xmodem::Constants::XMODEM_CRC) {
+        $read_size          = 133;
+        $sum_size           = 2;
+    }
 
     # Receive answer
     #my $received = $self->modem->answer( undef, 1000 );
     #my $received = $self->modem->answer( "/.{132}/", 1000 );
     # Had problems dropping bytes from block messages  that caused the checksum
     # to be missing on rare occasions.
-    ($count_in, $received) = $self->modem->port->read(132);
+    my $receive_start_time = time;
 
-    _log('[receive_message][', $count_in, '] received [', unpack('H*',$received), '] data');
+    do {
+        my $count_in_tmp    = 0;
+        my $received_tmp    = undef;
+
+        ($count_in_tmp, $received_tmp) = $self->modem->port->read($read_size);
+        $received           .= $received_tmp;
+        $count_in           += $count_in_tmp;
+
+        if (ord(substr($received, 0, 1)) != 1 and $count_in > 0) {
+            $done = 1;
+        }
+        elsif ($count_in >= $read_size) {
+            $done = 1;
+        }
+        elsif (time > $receive_start_time + 2) {
+            $error = 1;
+        }
+
+    } while (!$done and !$error);
+
+
+    ModemUtility::Misc::log('[receive_message][', $count_in, '] received [', unpack('H*',$received), '] data');
 
     # Get Message Type
     $message_type = ord(substr($received, 0, 1));
 
     # If this is a block extract data from message
-    if( $message_type eq Xmodem::Constants::soh ) {
+    if( $message_type eq ModemUtility::Constants::soh ) {
 
         # Check block number and its 2's complement
         ($message_number, $message_complement) = ( ord(substr($received,1,1)), ord(substr($received,2,1)) );
@@ -299,7 +143,7 @@ sub receive_message {
         $message_data = substr($received,3,128);
 
         # Extract checksum from message
-        $message_checksum = ord(substr($received, 131, 1));
+        $message_checksum = ord(substr($received, 131, $sum_size));
     }
 
     my %message = (
@@ -317,27 +161,38 @@ sub run {
     my $self  = $_[0];
     my $modem = $self->{_modem};
     my $file  = $_[1] || $self->{_filename};
-    my $protocol = $_[2] || Xmodem::Constants::XMODEM;
 
-    _log('[run] checking modem[', $modem, '] or file[', $file, '] members');
+    # change used protocol
+    if ($_[2] and $_[2] != $self->{protocol}) {
+        $self->{protocol} = $_[2];
+    }
+
+    ModemUtility::Misc::log('[run] checking modem[', $modem, '] or file[', $file, '] members');
     return 0 unless $modem and $file;
+
+    ModemUtility::Misc::log("[run] Protocol: ",  $self->{protocol});
 
     # Initialize transfer
     $self->{current_block} = 0;
     $self->{timeouts}      = 0;
 
     # Initialize a receiving buffer
-    _log('[run] creating new receive buffer');
+    ModemUtility::Misc::log('[run] creating new receive buffer');
 
-    my $buffer = Xmodem::Buffer->new();
+    my $buffer = ModemUtility::Buffer->new();
 
     # Stage 1: handshaking for xmodem standard version
-    _log('[run] sending first timeout');
-    $self->send_timeout();
+    ModemUtility::Misc::log('[run] sending first timeout');
+    if ($self->{protocol} != Xmodem::Constants::XMODEM_CRC) {
+        $self->send_timeout();
+    }
+    else {
+        $self->send_c();
+    }
 
     my $file_complete = 0;
 
-    $self->{current_block} = Xmodem::Block->new(0);
+    $self->{current_block} = ModemUtility::Block->new(0);
 
     # Open output file
     return undef unless open OUTFILE, '>'.$file;
@@ -348,14 +203,14 @@ sub run {
         # Try to receive a message
         my %message = $self->receive_message();
 
-        if ( $message{type} eq Xmodem::Constants::nul ) {
+        if ( $message{type} eq ModemUtility::Constants::nul ) {
 
             # Nothing received yet, do nothing
-            _log('[run] <NUL>', $message{type});
-        } elsif ( $message{type} eq Xmodem::Constants::eot ) {
+            ModemUtility::Misc::log('[run] <NUL>', $message{type});
+        } elsif ( $message{type} eq ModemUtility::Constants::eot ) {
 
             # If last block transmitted mark complete and close file
-            _log('[run] <EOT>', $message{type});
+            ModemUtility::Misc::log('[run] <EOT>', $message{type});
 
             # Acknoledge we received <EOT>
             $self->send_ack();
@@ -365,36 +220,42 @@ sub run {
             print(OUTFILE $buffer->dump());
 
             close OUTFILE;
-        } elsif ( $message{type} eq Xmodem::Constants::soh ) {
+        } elsif ( $message{type} eq ModemUtility::Constants::soh ) {
 
             # If message header, check integrity and build block
-            _log('[run] <SOH>', $message{type});
+            ModemUtility::Misc::log('[run] <SOH>', $message{type});
             my $message_status = 1;
 
             # Check block number
             if ( (255 - $message{complement}) != $message{number} ) {
-                _log('[run] bad block number: ', $message{number}, ' != (255 - ', $message{complement}, ')' );
+                ModemUtility::Misc::log('[run] bad block number: ', $message{number}, ' != (255 - ', $message{complement}, ')' );
                 $message_status = 0;
             }
 
             # Check block numbers for out of sequence blocks
             if ( $message{number} < $self->{current_block}->number() || $message{number} > ($self->{current_block}->number() + 1) ) {
-                _log('[run] bad block sequence');
+                ModemUtility::Misc::log('[run] bad block sequence');
                 $self->abort_transfer();
             }
 
             # Instance a new "block" object from message data received
-            my $new_block = Xmodem::Block->new( $message{number}, $message{data} );
+            my $new_block = ModemUtility::Block->new( $message{number}, $message{data} );
+
+            # Set flag for checksum algo
+            my $sum_flag = ModemUtility::Constants::CHECKSUM;
+            if ($self->{protocol} == Xmodem::Constants::XMODEM_CRC) {
+                $sum_flag = ModemUtility::Constants::CRC16;
+            }
 
             # Check block against checksum
-            if (!( defined $new_block && $new_block->verify( 'checksum', $message{checksum}) )) {
-                _log('[run] bad block checksum');
+            if (!( defined $new_block && $new_block->verify($sum_flag, $message{checksum}) )) {
+                ModemUtility::Misc::log('[run] bad block checksum');
                 $message_status = 0;
             }
 
         # This message block was good, update current_block and push onto buffer
             if ($message_status) {
-                _log('[run] received block ', $new_block->number());
+                ModemUtility::Misc::log('[run] received block ', $new_block->number());
 
                 # Update current block to the one received
                 $self->{current_block} = $new_block;
@@ -408,11 +269,11 @@ sub run {
             } else {
 
                 # Send nak since did not receive block successfully
-                _log('[run] message_status = 0, sending <NAK>');
+                ModemUtility::Misc::log('[run] message_status = 0, sending <NAK>');
                 $self->send_nak();
             }
         } else {
-            _log('[run] neither types found, sending timingout');
+            ModemUtility::Misc::log('[run] neither types found, sending timingout');
             $self->send_timeout();
         }
 
@@ -421,32 +282,37 @@ sub run {
 
 sub send_ack {
     my $self = $_[0];
-    _log('sending ack');
-    $self->modem->atsend( chr(Xmodem::Constants::ack) );
-    $self->modem->port->write_drain();
+    ModemUtility::Misc::log('sending ack');
+    $self->modem->atsend( chr(ModemUtility::Constants::ack) );
+    ModemUtility::Misc::write_drain($self->modem);
+    $self->{timeouts} = 0;
+    return 1;
+}
+
+sub send_c {
+    my $self = $_[0];
+    ModemUtility::Misc::log('sending C');
+    $self->modem->atsend( chr(ModemUtility::Constants::C) );
+    ModemUtility::Misc::write_drain($self->modem);
     $self->{timeouts} = 0;
     return 1;
 }
 
 sub send_nak {
     my $self = $_[0];
-    _log('sending timeout (', $self->{timeouts}, ')');
-    $self->modem->atsend( chr(Xmodem::Constants::nak) );
+    ModemUtility::Misc::log('sending timeout (', $self->{timeouts}, ')');
+    $self->modem->atsend( chr(ModemUtility::Constants::nak) );
 
-    my $received = $self->modem->answer( undef, TIMEOUT_CHECKSUM );
-
-    _log('[nak_dump] received [', unpack('H*',$received), '] data');
-
-    $self->modem->port->write_drain();
+    ModemUtility::Misc::write_drain($self->modem);
     $self->{timeouts}++;
     return 1;
 }
 
 sub send_timeout {
     my $self = $_[0];
-    _log('sending timeout (', $self->{timeouts}, ')');
-    $self->modem->atsend( chr(Xmodem::Constants::nak) );
-    $self->modem->port->write_drain();
+    ModemUtility::Misc::log('sending timeout (', $self->{timeouts}, ')');
+    $self->modem->atsend( chr(ModemUtility::Constants::nak) );
+    ModemUtility::Misc::write_drain($self->modem);
     $self->{timeouts}++;
     return 1;
 }
@@ -456,62 +322,11 @@ sub timeouts {
     $self->{timeouts};
 }
 
-sub _log {
-    print STDERR @_, "\n" if $DEBUG
-}
-
 1;
 
 =head1 NAME
 
 Device::Modem::Protocol::Xmodem
-
-=head1 Xmodem::Block
-
-Class that represents a single Xmodem data block.
-
-=head2 Synopsis
-
-	my $b = Xmodem::Block->new( 1, 'My Data...<until-128-chars>...' );
-	if( defined $b ) {
-		# Ok, block instanced, verify its checksum
-		if( $b->verify( 'checksum', <my_chksum> ) ) {
-			...
-		} else {
-			...
-		}
-	} else {
-		# No block
-	}
-
-	# Calculate checksum, crc16, 32, ...
-	$crc16 = $b->crc16();
-	$crc32 = $b->crc32();
-	$chksm = $b->checksum();
-
-=head1 Xmodem::Buffer
-
-Class that implements an Xmodem receive buffer of data blocks. Every block of data
-is represented by a C<Xmodem::Block> object.
-
-Blocks can be B<push>ed and B<pop>ped from the buffer. You can retrieve the B<last>
-block, or the list of B<blocks> from buffer.
-
-=head2 Synopsis
-
-	my $buf = Xmodem::Buffer->new();
-	my $b1  = Xmodem::Block->new(1, 'Data...');
-
-	$buf->push($b1);
-
-	my $b2  = Xmodem::Block->new(2, 'More data...');
-	$buf->push($b2);
-
-	my $last_block = $buf->last();
-
-	print 'now I have ', scalar($buf->blocks()), ' in the buffer';
-
-	# TODO document replace() function ???
 
 =head1 Xmodem::Constants
 
@@ -520,31 +335,20 @@ data blocks encoding procedures
 
 =head2 Synopsis
 
-	Xmodem::Constants::soh ........... 'start of header'
-	Xmodem::Constants::eot ........... 'end of trasmission'
-	Xmodem::Constants::ack ........... 'acknowlegded'
-	Xmodem::Constants::nak ........... 'not acknowledged'
-	Xmodem::Constants::can ........... 'cancel'
-	Xmodem::Constants::C   ........... `C' ASCII char
-
 	Xmodem::Constants::XMODEM ........ basic xmodem protocol
 	Xmodem::Constants::XMODEM_1K ..... xmodem protocol with 1k blocks
 	Xmodem::Constants::XMODEM_CRC .... xmodem protocol with CRC checks
 
-	Xmodem::Constants::CHECKSUM ...... type of block checksum
-	Xmodem::Constants::CRC16 ......... type of block crc16
-	Xmodem::Constants::CRC32 ......... type of block crc32
-	
 =head1 Xmodem::Receiver
 
-Control class to initiate and complete a C<X-modem> file transfer in receive mode
+Control class to initiate and complete a C<X-modem> file transfer in receive mode. XMODEM_1k dosn't support jet.
 
 =head2 Synopsis
 
 	my $recv = Xmodem::Receiver->new(
  		modem    => {Device::Modem object},
 		filename => 'name of file',
-		XXX protocol => 'xmodem' | 'xmodem-crc', | 'xmodem-1k'
+		protocol => Xmodem::Constants::XMODEM | Xmodem::Constants::XMODEM_CRC 
 	);
 
 	$recv->run();
@@ -591,5 +395,7 @@ of timeouts and at ten timeouts, aborts transfer.
 =over 4
 
 =item - L<Device::Modem>
+=item - L<Device::Protocol::ModemUtility>
+=item - L<Device::Protocol::Zmodem>
 
 =back

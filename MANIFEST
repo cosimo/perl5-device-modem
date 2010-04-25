@@ -7,6 +7,8 @@ test.pl
 lib/Device/Modem/Log/File.pm
 lib/Device/Modem/Log/Syslog.pm
 lib/Device/Modem/Protocol/Xmodem.pm
+lib/Device/Modem/Protocol/Zmodem.pm
+lib/Device/Modem/Protocol/ModemUtility.pm
 lib/Device/Modem/UsRobotics.pm
 examples/active.pl
 examples/shell.pl
@@ -16,4 +18,6 @@ examples/active.pl
 examples/xmodem.pl
 docs/Device-Modem.pod
 docs/FAQ.pod
+ppport.h
+Zmodem.xs
 META.yml                                 Module meta-data (added by MakeMaker)
