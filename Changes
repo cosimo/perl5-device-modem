@@ -1,5 +1,9 @@
 Revision history for Perl extension Device::Modem.
 
+1.54  Sun May 29 20:53:23 AEST 2011
+    - Removed uninitialized warning on $obj->{'CONNECTED'}.
+      Fixes RT #68504.
+
 1.53  Thu Apr 01 13:49:00 CET  2010
     - ***CHANGED*** default log file position
       from /var/log/modem.log to /tmp/modem.log.

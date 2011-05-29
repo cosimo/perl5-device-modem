@@ -1,5 +1,5 @@
 # Device::Modem - a Perl class to interface generic modems (AT-compliant)
-# Copyright (C) 2002-2010 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2002-2011 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -10,7 +10,7 @@
 # Perl licensing terms for details.
 
 package Device::Modem;
-$VERSION = '1.53_01';
+$VERSION = '1.54';
 
 BEGIN {
 
@@ -560,7 +560,8 @@ sub port {
     my $port_obj = $self->{'_comm_object'};
 
     # Maybe the port was disconnected?
-    if ($self->{'CONNECTED'} == 1 &&                # We were connected
+    if (defined $self->{'CONNECTED'} &&
+        $self->{'CONNECTED'} == 1 &&                # We were connected
         (! defined $port_obj || ! $port_obj)) {     # Now we aren't anymore
 
         # Avoid recursion on ourselves
@@ -1497,7 +1498,7 @@ Cosimo Streppone, L<cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
-(C) 2002-2010 Cosimo Streppone, L<cosimo@cpan.org>
+(C) 2002-2011 Cosimo Streppone, L<cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.
