@@ -122,7 +122,7 @@ sub attention {
     # Send attention sequence
     $self->atsend('+++');
 
-    # Wait 200 milliseconds
+    # Wait for response
     $self->answer();
 }
 
