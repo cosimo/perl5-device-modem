@@ -101,6 +101,8 @@ sub new {
         eval { require $logclass; };
         unless($@) {
             $aOpt{'_log'} = $package->new( $class, @options );
+        } else {
+            print STDERR "Failed to require Log package: $@\n";
         }
     } else {
 
