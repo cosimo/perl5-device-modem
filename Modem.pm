@@ -213,10 +213,14 @@ sub hangup {
     my $self = shift;
 
     $self->log->write('info', 'hanging up...');
-    $self->attention();
     $self->atsend( 'ATH0' . CR );
+    my $ok = $self->answer($Device::Modem::STD_RESPONSE);
+    unless ($ok) {
+      $self->attention();
+      $self->atsend( 'ATH0' . CR );
+      $self->answer($Device::Modem::STD_RESPONSE, 5000);
+    }
     $self->_reset_flags();
-    $self->answer(undef, 5000);
 }
 
 # Checks if modem is enabled (for now, it works ok for modem OFF/ON case)
