@@ -558,7 +558,9 @@ sub connect {
     $me-> log -> write('info', 'sending init string...' );
 
     # Set default initialization string if none supplied
-    $me->options->{'init_string'} ||= 'H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4';
+    unless (defined($me->options->{'init_string'})) {
+      $me->options->{'init_string'} ||= '&F E0 V1 &D2 &C1 S0=0';
+    }
 
     my $init_response = $me-> send_init_string( $me->options->{'init_string'} ) || '';
     $me-> log -> write('debug', "init response: $init_response\n"); # DEBUG
