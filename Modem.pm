@@ -483,6 +483,7 @@ sub connect {
     $aOpt{'databits'} ||= $Device::Modem::DATABITS;
     $aOpt{'parity'}   ||= $Device::Modem::PARITY;
     $aOpt{'stopbits'} ||= $Device::Modem::STOPBITS;
+    $aOpt{'max_reset_iter'} ||= 0;
 
     # Store communication options in object
     $me->{'_comm_options'} = \%aOpt;
@@ -529,12 +530,38 @@ sub connect {
     }
     $oPort -> purge_all;
 
+    # Get the modems attention
+    # Send multiple reset commands looking for a sensible response.
+    # A small number of modems need time to settle down and start responding to the serial port
+    my $iter = 0;
+    my $ok = 0;
+    my $blank = 0;
+    while ( ($iter < $aOpt{'max_reset_iter'}) && ($ok < 2) && ($blank < 3) ) {
+        $me->atsend('AT E0'. CR );
+        my $rslt = $me->answer($Device::Modem::STD_RESPONSE, 1500);
+#        print "Res: $rslt \r\n";
+        $iter+=1;
+        if ($rslt && $rslt =~ /^OK/) {
+            $ok+=1;
+        } else {
+            $ok=0;
+        }
+        if (!$rslt) {
+            $blank++;
+        } else {
+            $blank=0;
+        }
+    }
+    if ($aOpt{'max_reset_iter'}) {
+        $me->log->write('debug', "DEBUG CONNECT: $iter : $ok : $blank\n"); # DEBUG
+    }
     $me-> log -> write('info', 'sending init string...' );
 
     # Set default initialization string if none supplied
     $me->options->{'init_string'} ||= 'H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4';
 
-    $me-> send_init_string( $me->options->{'init_string'} );
+    my $init_response = $me-> send_init_string( $me->options->{'init_string'} ) || '';
+    $me-> log -> write('debug', "init response: $init_response\n"); # DEBUG
     $me-> _reset_flags();
 
     # Disable local echo
