@@ -448,10 +448,13 @@ sub _reset_flags {
 # my_init_string goes without 'AT' prefix
 sub send_init_string {
     my($self, $cInit) = @_;
-    $self->attention();
     $cInit = $self->options->{'init_string'} unless defined $cInit;
-    $self->atsend('AT '.$cInit. CR );
-    $self->answer($Device::Modem::STD_RESPONSE);
+    # If no Init string then do nothing!
+    if ($cInit) {
+      $self->attention();
+      $self->atsend('AT '.$cInit. CR );
+      return $self->answer($Device::Modem::STD_RESPONSE);
+    }
 }
 
 # returns log object reference or nothing if it is not defined
