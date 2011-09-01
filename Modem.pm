@@ -327,9 +327,9 @@ sub reset {
 
     $self->log->write('warning', 'resetting modem on '.$self->{'port'} );
     $self->hangup();
-    $self->send_init_string();
+    my $result = $self->send_init_string();
     $self->_reset_flags();
-#    return $self->answer();
+    return $result;
 }
 
 # Return an hash with the status of main modem signals
