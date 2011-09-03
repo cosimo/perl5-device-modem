@@ -59,7 +59,7 @@ $Device::Modem::WAITCMD  = 200;     # milliseconds
 
 # Setup text and numerical response codes
 @Device::Modem::RESPONSE = ( 'OK', undef, 'RING', 'NO CARRIER', 'ERROR', undef, 'NO DIALTONE', 'BUSY' );
-$Device::Modem::STD_RESPONSE = qr/^(OK|ERROR)$/m;
+$Device::Modem::STD_RESPONSE = qr/^(OK|ERROR|COMMAND NOT SUPPORT)$/m;
 
 #%Device::Modem::RESPONSE = (
 #	'OK'   => 'Command executed without errors',
