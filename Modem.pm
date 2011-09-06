@@ -53,7 +53,6 @@ $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
 $Device::Modem::PARITY   = 'none';
 $Device::Modem::TIMEOUT  = 500;     # milliseconds
-$Device::Modem::WAITCYCLE= 50;
 $Device::Modem::READCHARS= 130;
 $Device::Modem::WAITCMD  = 200;     # milliseconds
 
@@ -680,7 +679,6 @@ sub _answer {
     my($expect, $timeout) = @_;
     $expect = $Device::Modem::STD_RESPONSE if (! defined($expect));
     $timeout = $Device::Modem::TIMEOUT if (! defined($timeout));
-    my $time_slice = $Device::Modem::WAITCYCLE;     # single cycle wait time
 
     # If we expect something, we must first match against serial input
     my $done = (defined $expect and $expect ne '');
@@ -704,7 +702,9 @@ sub _answer {
     }
 
     do {
-        my($howmany, $what) = $me->port->read($Device::Modem::READCHARS);
+        my ($what, $howmany);
+        $what = $me->port->read(1) . $me->port->input;
+        $howmany = length($what);
 
         # Timeout count incremented only on empty readings
         if( defined $what && $howmany > 0 ) {
@@ -719,8 +719,6 @@ sub _answer {
                 $done = ( defined $copy && $copy =~ $expect ) ? 1 : 0;
                 $me->log->write( debug => 'answer: matched expect: '.$expect ) if ($done);
             }
-
-            $me->wait($time_slice) unless $done;
 
         # Check if we reached max time for timeout (only if end_time is defined)
         } elsif( $end_time > 0 ) {
