@@ -678,6 +678,7 @@ sub write_drain
 sub _answer {
     my $me = shift;
     my($expect, $timeout) = @_;
+    $expect = $Device::Modem::STD_RESPONSE if (! defined($expect));
     $timeout = $Device::Modem::TIMEOUT if (! defined($timeout));
     my $time_slice = $Device::Modem::WAITCYCLE;     # single cycle wait time
 
