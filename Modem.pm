@@ -53,13 +53,12 @@ $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
 $Device::Modem::PARITY   = 'none';
 $Device::Modem::TIMEOUT  = 500;     # milliseconds
-$Device::Modem::WAITCYCLE= 50;
 $Device::Modem::READCHARS= 130;
 $Device::Modem::WAITCMD  = 200;     # milliseconds
 
 # Setup text and numerical response codes
 @Device::Modem::RESPONSE = ( 'OK', undef, 'RING', 'NO CARRIER', 'ERROR', undef, 'NO DIALTONE', 'BUSY' );
-$Device::Modem::STD_RESPONSE = qr/^(OK|ERROR)$/m;
+$Device::Modem::STD_RESPONSE = qr/^(OK|ERROR|COMMAND NOT SUPPORT)$/m;
 
 #%Device::Modem::RESPONSE = (
 #	'OK'   => 'Command executed without errors',
@@ -101,6 +100,8 @@ sub new {
         eval { require $logclass; };
         unless($@) {
             $aOpt{'_log'} = $package->new( $class, @options );
+        } else {
+            print STDERR "Failed to require Log package: $@\n";
         }
     } else {
 
@@ -122,7 +123,7 @@ sub attention {
     # Send attention sequence
     $self->atsend('+++');
 
-    # Wait 200 milliseconds
+    # Wait for response
     $self->answer();
 }
 
@@ -211,10 +212,14 @@ sub hangup {
     my $self = shift;
 
     $self->log->write('info', 'hanging up...');
-    $self->attention();
     $self->atsend( 'ATH0' . CR );
+    my $ok = $self->answer($Device::Modem::STD_RESPONSE);
+    unless ($ok) {
+      $self->attention();
+      $self->atsend( 'ATH0' . CR );
+      $self->answer($Device::Modem::STD_RESPONSE, 5000);
+    }
     $self->_reset_flags();
-    $self->answer(undef, 5000);
 }
 
 # Checks if modem is enabled (for now, it works ok for modem OFF/ON case)
@@ -325,9 +330,9 @@ sub reset {
 
     $self->log->write('warning', 'resetting modem on '.$self->{'port'} );
     $self->hangup();
-    $self->send_init_string();
+    my $result = $self->send_init_string();
     $self->_reset_flags();
-#    return $self->answer();
+    return $result;
 }
 
 # Return an hash with the status of main modem signals
@@ -442,10 +447,13 @@ sub _reset_flags {
 # my_init_string goes without 'AT' prefix
 sub send_init_string {
     my($self, $cInit) = @_;
-    $self->attention();
     $cInit = $self->options->{'init_string'} unless defined $cInit;
-    $self->atsend('AT '.$cInit. CR );
-    $self->answer($Device::Modem::STD_RESPONSE);
+    # If no Init string then do nothing!
+    if ($cInit) {
+      $self->attention();
+      $self->atsend('AT '.$cInit. CR );
+      return $self->answer($Device::Modem::STD_RESPONSE);
+    }
 }
 
 # returns log object reference or nothing if it is not defined
@@ -474,6 +482,7 @@ sub connect {
     $aOpt{'databits'} ||= $Device::Modem::DATABITS;
     $aOpt{'parity'}   ||= $Device::Modem::PARITY;
     $aOpt{'stopbits'} ||= $Device::Modem::STOPBITS;
+    $aOpt{'max_reset_iter'} ||= 0;
 
     # Store communication options in object
     $me->{'_comm_options'} = \%aOpt;
@@ -520,12 +529,40 @@ sub connect {
     }
     $oPort -> purge_all;
 
+    # Get the modems attention
+    # Send multiple reset commands looking for a sensible response.
+    # A small number of modems need time to settle down and start responding to the serial port
+    my $iter = 0;
+    my $ok = 0;
+    my $blank = 0;
+    while ( ($iter < $aOpt{'max_reset_iter'}) && ($ok < 2) && ($blank < 3) ) {
+        $me->atsend('AT E0'. CR );
+        my $rslt = $me->answer($Device::Modem::STD_RESPONSE, 1500);
+#        print "Res: $rslt \r\n";
+        $iter+=1;
+        if ($rslt && $rslt =~ /^OK/) {
+            $ok+=1;
+        } else {
+            $ok=0;
+        }
+        if (!$rslt) {
+            $blank++;
+        } else {
+            $blank=0;
+        }
+    }
+    if ($aOpt{'max_reset_iter'}) {
+        $me->log->write('debug', "DEBUG CONNECT: $iter : $ok : $blank\n"); # DEBUG
+    }
     $me-> log -> write('info', 'sending init string...' );
 
     # Set default initialization string if none supplied
-    $me->options->{'init_string'} ||= 'H0 Z S7=45 S0=0 Q0 V1 E0 &C0 X4';
+    unless (defined($me->options->{'init_string'})) {
+      $me->options->{'init_string'} ||= '&F E0 V1 &D2 &C1 S0=0';
+    }
 
-    $me-> send_init_string( $me->options->{'init_string'} );
+    my $init_response = $me-> send_init_string( $me->options->{'init_string'} ) || '';
+    $me-> log -> write('debug', "init response: $init_response\n"); # DEBUG
     $me-> _reset_flags();
 
     # Disable local echo
@@ -640,8 +677,8 @@ sub write_drain
 sub _answer {
     my $me = shift;
     my($expect, $timeout) = @_;
+    $expect = $Device::Modem::STD_RESPONSE if (! defined($expect));
     $timeout = $Device::Modem::TIMEOUT if (! defined($timeout));
-    my $time_slice = $Device::Modem::WAITCYCLE;     # single cycle wait time
 
     # If we expect something, we must first match against serial input
     my $done = (defined $expect and $expect ne '');
@@ -665,7 +702,9 @@ sub _answer {
     }
 
     do {
-        my($howmany, $what) = $me->port->read($Device::Modem::READCHARS);
+        my ($what, $howmany);
+        $what = $me->port->read(1) . $me->port->input;
+        $howmany = length($what);
 
         # Timeout count incremented only on empty readings
         if( defined $what && $howmany > 0 ) {
@@ -680,8 +719,6 @@ sub _answer {
                 $done = ( defined $copy && $copy =~ $expect ) ? 1 : 0;
                 $me->log->write( debug => 'answer: matched expect: '.$expect ) if ($done);
             }
-
-            $me->wait($time_slice) unless $done;
 
         # Check if we reached max time for timeout (only if end_time is defined)
         } elsif( $end_time > 0 ) {
