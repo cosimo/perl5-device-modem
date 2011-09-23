@@ -11,9 +11,9 @@ my $is_windoze = index($^O, 'Win') >= 0;
 
 WriteMakefile(
 	'AUTHOR'        => 'Cosimo Streppone <cosimo@cpan.org>',
-	'ABSTRACT_FROM' => 'Modem.pm',
+	'ABSTRACT_FROM' => 'lib/Device/Modem.pm',
 	'NAME'	        => 'Device::Modem',
-	'VERSION_FROM'	=> 'Modem.pm',
+	'VERSION_FROM'	=> 'lib/Device/Modem.pm',
 	'PREREQ_PM'		=> $is_windoze
                        ? { 'Win32::SerialPort'   => 0 }
                        : { 'Device::SerialPort'  => 0 },
