@@ -1,5 +1,9 @@
 Revision history for Perl extension Device::Modem.
 
+1.55  Fri Sep 23 22:01:31 CEST 2011
+    - Performance improvements by Ed Wildgoose, long time user. Thanks Ed!
+      Windows users, please test this release!
+
 1.54  Sun May 29 20:53:23 AEST 2011
     - Removed uninitialized warning on $obj->{'CONNECTED'}.
       Fixes RT #68504.
