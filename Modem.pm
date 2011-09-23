@@ -10,7 +10,7 @@
 # Perl licensing terms for details.
 
 package Device::Modem;
-$VERSION = '1.54';
+$VERSION = '1.55';
 
 BEGIN {
 
@@ -48,6 +48,7 @@ use constant CR => "\r";
 
 # Connection defaults
 $Device::Modem::DEFAULT_PORT = index($^O, 'Win') >= 0 ? 'COM1' : '/dev/modem';
+$Device::Modem::DEFAULT_INIT_STRING = 'S7=45 S0=0 L1 V1 X4 &c1 E1 Q0';
 $Device::Modem::BAUDRATE = 19200;
 $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
@@ -557,11 +558,11 @@ sub connect {
     $me-> log -> write('info', 'sending init string...' );
 
     # Set default initialization string if none supplied
-    unless (defined($me->options->{'init_string'})) {
-      $me->options->{'init_string'} ||= '&F E0 V1 &D2 &C1 S0=0';
-    }
+    my $init_string = defined $me->options->{'init_string'}
+        ? $me->options->{'init_string'}
+        : $Device::Modem::DEFAULT_INIT_STRING;
 
-    my $init_response = $me-> send_init_string( $me->options->{'init_string'} ) || '';
+    my $init_response = $me->send_init_string($init_string) || '';
     $me-> log -> write('debug', "init response: $init_response\n"); # DEBUG
     $me-> _reset_flags();
 
