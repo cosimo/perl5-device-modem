@@ -10,7 +10,7 @@
 # Perl licensing terms for details.
 
 package Device::Modem;
-$VERSION = '1.55';
+$VERSION = '1.56';
 
 BEGIN {
 

@@ -1,6 +1,10 @@
 Revision history for Perl extension Device::Modem.
 
-1.55  Fri Sep 23 22:01:31 CEST 2011
+1.56  Thu Sep 29 13:43:31 CEST 2011
+    - [RT#71330] Unbroken the MANIFEST file. 1.55 was non functional.
+      Thanks to Vita Cizek for reporting.
+
+1.55  [BROKEN RELEASE. AVOID] Fri Sep 23 22:01:31 CEST 2011
     - Performance improvements by Ed Wildgoose, long time user. Thanks Ed!
       Windows users, please test this release!
 
