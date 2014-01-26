@@ -1,5 +1,10 @@
 Revision history for Perl extension Device::Modem.
 
+1.57  Sun Jan 26 11:36:11 CET 2014
+    - Added a "handshake" option to the connect() method.
+      Allowed values are "xoff", "rts" or "none" (default).
+      Thanks to Ezio Bonsi for suggesting the idea.
+
 1.56  Thu Sep 29 13:43:31 CEST 2011
     - [RT#71330] Unbroken the MANIFEST file. 1.55 was non functional.
       Thanks to Vita Cizek for reporting.

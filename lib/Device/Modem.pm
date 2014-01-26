@@ -1,5 +1,5 @@
 # Device::Modem - a Perl class to interface generic modems (AT-compliant)
-# Copyright (C) 2002-2011 Cosimo Streppone, cosimo@cpan.org
+# Copyright (C) 2002-2014 Cosimo Streppone, cosimo@cpan.org
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
@@ -10,7 +10,7 @@
 # Perl licensing terms for details.
 
 package Device::Modem;
-$VERSION = '1.56';
+$VERSION = '1.57';
 
 BEGIN {
 
@@ -52,6 +52,7 @@ $Device::Modem::DEFAULT_INIT_STRING = 'S7=45 S0=0 L1 V1 X4 &c1 E1 Q0';
 $Device::Modem::BAUDRATE = 19200;
 $Device::Modem::DATABITS = 8;
 $Device::Modem::STOPBITS = 1;
+$Device::Modem::HANDSHAKE= 'none';
 $Device::Modem::PARITY   = 'none';
 $Device::Modem::TIMEOUT  = 500;     # milliseconds
 $Device::Modem::READCHARS= 130;
@@ -483,6 +484,7 @@ sub connect {
     $aOpt{'databits'} ||= $Device::Modem::DATABITS;
     $aOpt{'parity'}   ||= $Device::Modem::PARITY;
     $aOpt{'stopbits'} ||= $Device::Modem::STOPBITS;
+    $aOpt{'handshake'}||= $Device::Modem::HANDSHAKE;
     $aOpt{'max_reset_iter'} ||= 0;
 
     # Store communication options in object
@@ -503,14 +505,14 @@ sub connect {
 
     # Set communication options
     my $oPort = $me->port;
-    $oPort -> baudrate ( $me->options->{'baudrate'} );
-    $oPort -> databits ( $me->options->{'databits'} );
-    $oPort -> stopbits ( $me->options->{'stopbits'} );
-    $oPort -> parity   ( $me->options->{'parity'}   );
+    $oPort -> baudrate ( $me->options->{'baudrate'}  );
+    $oPort -> databits ( $me->options->{'databits'}  );
+    $oPort -> stopbits ( $me->options->{'stopbits'}  );
+    $oPort -> parity   ( $me->options->{'parity'}    );
+    $oPort -> handshake( $me->options->{'handshake'} );
 
     # Non configurable options
     $oPort -> buffers         ( 10000, 10000 );
-    $oPort -> handshake       ( 'none' );
     $oPort -> read_const_time ( 20 );           # was 500
     $oPort -> read_char_time  ( 0 );
 
@@ -521,7 +523,7 @@ sub connect {
         $oPort->read_interval( 20 );
     }
 
-    $oPort -> are_match       ( 'OK' );
+    $oPort -> are_match ( 'OK' );
     $oPort -> lookclear;
 
     unless ( $oPort -> write_settings ) {
@@ -1059,6 +1061,13 @@ This tells how many bits your data word is composed of.
 Default (and most common setting) is C<8>.
 This parameter is handled directly by C<Device::SerialPort> object.
 
+=item C<handshake>
+
+Sets the handshake (or flow control) method for the serial port.
+By default it is C<none>, but can be either C<rts> (hardware flow control)
+or C<xoff> (software flow control). These flow control modes may or may not
+work depending on your modem device or software.
+
 =item C<init_string>
 
 Custom initialization string can be supplied instead of the built-in one, that is the
@@ -1536,7 +1545,7 @@ Cosimo Streppone, L<cosimo@cpan.org>
 
 =head1 COPYRIGHT
 
-(C) 2002-2011 Cosimo Streppone, L<cosimo@cpan.org>
+(C) 2002-2014 Cosimo Streppone, L<cosimo@cpan.org>
 
 This library is free software; you can only redistribute it and/or
 modify it under the same terms as Perl itself.
