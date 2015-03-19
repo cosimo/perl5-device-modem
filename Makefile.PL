@@ -24,6 +24,7 @@ WriteMakefile(
 			license    => 'http://dev.perl.org/licenses/',
 		},
 	},
+	'MIN_PERL_VERSION' => '5.00503',
 );
 
 sub configure {
