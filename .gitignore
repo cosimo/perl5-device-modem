@@ -8,3 +8,4 @@ MYMETA.json
 MYMETA.yml
 cover_db/
 *.log
+*.bak

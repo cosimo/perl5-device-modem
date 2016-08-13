@@ -12,15 +12,15 @@
 # $Id$
 #
 package Device::Modem::Log::File;
-$VERSION = sprintf '%d.%02d', q$Revision: 2.1 $ =~ /(\d+)\.(\d+)/;
+our $VERSION = '2.11';
+$VERSION = eval $VERSION;
 
 use strict;
 use File::Path     ();
 use File::Basename ();
-	
+
 # Define log levels like syslog service
-use vars '%levels';
-%levels = ( debug => 7, info => 6, notice => 5, warning => 4, err => 3, error => 3, crit => 2, alert => 1, emerg => 0 );
+our %levels = ( debug => 7, info => 6, notice => 5, warning => 4, err => 3, error => 3, crit => 2, alert => 1, emerg => 0 );
 
 sub new {
 	my( $class, $package, $filename ) = @_;
@@ -34,8 +34,8 @@ sub new {
 	);
 
 	my $self = bless \%obj, 'Device::Modem::Log::File';
-	
-	# Open file at the start and save reference	
+
+	# Open file at the start and save reference
 	if( open( LOGFILE, '>>'.$self->{'file'} ) ) {
 
 		$self->{'fh'} = \*LOGFILE;
@@ -114,7 +114,7 @@ sub fh {
 	return $self->{'fh'};
 }
 
-# Closes log file opened in new() 
+# Closes log file opened in new()
 sub close {
 	my $self = shift;
 	my $fh = $self->{'FH'};

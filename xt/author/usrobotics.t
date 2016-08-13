@@ -1,4 +1,5 @@
-#
+#!perl
+
 # UsRobotics module test
 #
 # $Id: usrobotics.t,v 1.2 2006-04-20 20:19:22 cosimo Exp $
@@ -35,5 +36,3 @@ diag('msr: ', $ans, "\n");
 ok($ans =~ /\d+,\d+,\d+,\d+/, 'message status ok');
 
 ok($modem->disconnect(), 'disconnected');
-
-

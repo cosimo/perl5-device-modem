@@ -20,13 +20,12 @@ $|++;
 my $port = $ENV{'DEV_MODEM_PORT'};
 my $baud = $ENV{'DEV_MODEM_BAUD'};
 
-if( !$port || !$baud ) {
-	print "ok 2\n";
-	print "ok 3\n";
+unless( $port && $baud ) {
+	print "skip 1\nskip 2\nskip 3\n";
 	exit;
 }
 
-my $modem = new Device::Modem( port => $port );
+my $modem = Device::Modem->new( port => $port );
 
 if( $modem->connect( baudrate => $baud ) ) {
 	print "ok 2\n";
@@ -35,14 +34,18 @@ if( $modem->connect( baudrate => $baud ) ) {
 	die "cannot connect to $port serial port!: $!";
 }
 
-print 'testing address book numbers storing', "\n";
+print 'testing S-registers functions...', "\n";
 
-my $ok1 = $modem->store_number(0, '10880432090000');
-my $ok2 = $modem->store_number(1, '0432,649062' );
+my $v1 = $modem->S_register(1);
+my $v2 = $modem->S_register(1, 72);
+my $v3 = $modem->S_register(1);
+my $v4 = $modem->S_register(1, $v1);
+my $v5 = $modem->S_register(1);
 
-if( $ok1 && $ok2 ) {
+if( $v1 eq $v5 && $v1 == $v5 &&
+	$v2 == 72  && $v3 == 72  &&
+	$v4 eq $v1 && $v4 == $v1 ) {
 	print "ok 3\n";
 } else {
 	print "not ok 3\n";
 }
-
