@@ -12,7 +12,7 @@ my %WriteMakefileArgs = (
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
   },
-  "DISTNAME" => "Mail-Sender",
+  "DISTNAME" => "Device-Modem",
   "LICENSE" => "perl",
   'META_MERGE'    => {
     resources => {

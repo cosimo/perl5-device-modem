@@ -6,8 +6,6 @@ use Device::Modem;
 
 use Test::More;
 
-use Test::More;
-
 my $port = $ENV{'DEV_MODEM_PORT'};
 my $baud = $ENV{'DEV_MODEM_BAUD'} || 19200;
 my $is_windows = ($^O eq 'MSWin32')? 1: 0;
