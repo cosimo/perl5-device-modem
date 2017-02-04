@@ -1,5 +1,11 @@
+Device-Modem-*.tar.gz
+Device-Modem
 Makefile
+Makefile.old
 pm_to_blib
-blib
+blib/
 MYMETA.json
 MYMETA.yml
+cover_db/
+*.log
+*.bak
