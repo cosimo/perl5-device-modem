@@ -18,6 +18,7 @@ $VERSION = eval $VERSION;
 use strict;
 use File::Path     ();
 use File::Basename ();
+use IO::Handle;
 
 # Define log levels like syslog service
 our %levels = ( debug => 7, info => 6, notice => 5, warning => 4, err => 3, error => 3, crit => 2, alert => 1, emerg => 0 );
@@ -36,9 +37,10 @@ sub new {
 	my $self = bless \%obj, 'Device::Modem::Log::File';
 
 	# Open file at the start and save reference
-	if( open( LOGFILE, '>>'.$self->{'file'} ) ) {
+	my $LOGFILE = new IO::Handle;
+	if( open( $LOGFILE, '>>'.$self->{'file'} ) ) {
 
-		$self->{'fh'} = \*LOGFILE;
+		$self->{'fh'} = $LOGFILE;
 
 		# Unbuffer writes to logfile
 		my $oldfh = select $self->{'fh'};
@@ -117,9 +119,9 @@ sub fh {
 # Closes log file opened in new()
 sub close {
 	my $self = shift;
-	my $fh = $self->{'FH'};
+	my $fh = $self->{'fh'};
 	close $fh;
-	undef $self->{'FH'};
+	undef $self->{'fh'};
 }
 
 1;
