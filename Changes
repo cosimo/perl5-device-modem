@@ -1,5 +1,10 @@
 Revision history for Perl extension Device::Modem.
 
+1.59  Mon Jun 15 08:17:54 CEST 2020
+    - Merged pull request #6 from ghciv6/fix_multi_instance_log
+    fixed log handling with multi instances and typo in close().
+    Thanks to @ghciv6 !
+
 1.58
     - Updated test suite a bit.
     - Added the tests to the manifest.
